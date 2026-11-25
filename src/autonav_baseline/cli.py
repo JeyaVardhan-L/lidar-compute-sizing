@@ -29,6 +29,7 @@ def main(argv=None) -> int:
     r.add_argument("--mode", default="pipeline", choices=["pipeline", "single-frame"])
     r.add_argument("--voxel", type=float, default=0.15)
     r.add_argument("--label", default="")
+    r.add_argument("--sensor", default="native", help="sensor emulation model (see harness/config.py SENSOR_MODELS)")
 
     lb = sub.add_parser("lab", help="start the local Lab server")
     lb.add_argument("--port", type=int, default=8765)
@@ -44,7 +45,7 @@ def main(argv=None) -> int:
     a = ap.parse_args(argv)
     if a.cmd == "run":
         from autonav_baseline.harness.runner import execute
-        run_dir = execute(a.dataset, a.window, a.variant, a.profile, a.repeats, a.warmup, a.mode, a.voxel, a.label, argv)
+        run_dir = execute(a.dataset, a.window, a.variant, a.profile, a.repeats, a.warmup, a.mode, a.voxel, a.label, argv, sensor=a.sensor)
         s = json.loads((run_dir / "summary.json").read_text())
         print(f"run: {run_dir.name}  status: {s.get('status')}")
         if s.get("status") == "completed":

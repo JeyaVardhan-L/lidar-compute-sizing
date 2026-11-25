@@ -24,6 +24,7 @@ import numpy as np
 from autonav_baseline.datasets.registry import get_adapter
 from autonav_baseline.harness.env import collect_environment, peak_rss_mb
 from autonav_baseline.harness.variants import make_odometry
+from autonav_baseline.lidar.sensor_emulation import emulate
 from autonav_baseline.lidar.filtering import filter_by_range, remove_invalid_points, statistical_outlier_removal, voxel_downsample
 
 FIELDS = [
@@ -62,9 +63,13 @@ def main() -> int:
     odo = None if single_frame else make_odometry(spec["variant"], spec["params"])
     period_ms = 1000.0 / spec["nominal_hz"]
     params = spec["params"]
+    sensor = spec.get("sensor") or {"id": "native", "model": {}}
+    stride = int(sensor["model"].get("frame_stride", 1))
+    altitudes = sensor.get("altitudes")
+    organized = sensor.get("organized")
 
     rows, poses, stamps = [], [], []
-    total = stop - start
+    total = len(range(start, stop, stride))
     gen = adapter.get_lidar_frames(max_frames=stop)
     idx = -1
     t_loop0 = time.perf_counter()
@@ -78,12 +83,15 @@ def main() -> int:
         idx += 1
         if idx < start:
             continue
-        k = idx - start
+        if (idx - start) % stride:
+            continue  # emulated lower frame rate: this scan never arrives
+        k = (idx - start) // stride
+        frame_points = emulate(frame.points, sensor["model"], organized, altitudes, idx, sensor.get("layout", "row-major"))  # untimed: sensor side
         row = {f: "" for f in FIELDS}
         row.update(rep=spec["rep"], frame_index=idx, timestamp="" if frame.timestamp is None else repr(frame.timestamp),
-                   warmup=int(0 < k <= warmup), load_ms=round(load_ms, 4), points_raw=len(frame.points))
+                   warmup=int(0 < k <= warmup), load_ms=round(load_ms, 4), points_raw=len(frame_points))
         if single_frame:
-            pts = frame.points
+            pts = frame_points
             t = time.perf_counter(); pts, _ = remove_invalid_points(pts); t_inv = time.perf_counter()
             pts, _ = filter_by_range(pts, params["min_range"], params["max_range"]); t_rng = time.perf_counter()
             n_range = len(pts)
@@ -96,7 +104,7 @@ def main() -> int:
                        points_range=n_range, points_voxel=len(pts),
                        points_outlier=len(out_pts), warmup=int(k < warmup))
         else:
-            r = odo.process_frame(frame.points, idx, frame.timestamp)
+            r = odo.process_frame(frame_points, idx, frame.timestamp)
             row.update(preprocess_ms=round(r.preprocess_ms, 4), register_ms=round(r.register_ms, 4),
                        total_ms=round(r.registration_latency_ms, 4),
                        e2e_ms=round(load_ms + r.registration_latency_ms, 4),

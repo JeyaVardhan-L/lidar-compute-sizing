@@ -14,4 +14,10 @@ def make_odometry(variant: str, params: Dict[str, Any]) -> ICPOdometry:
     if variant == "p2plane":
         from autonav_baseline.harness.variants_impl import P2PlaneOdometry
         return P2PlaneOdometry(**params)
+    if variant == "c-icp":
+        from autonav_baseline.harness.variants_compiled import CompiledICPOdometry
+        return CompiledICPOdometry(**params)
+    if variant == "c-gicp":
+        from autonav_baseline.harness.variants_compiled import CompiledGICPOdometry
+        return CompiledGICPOdometry(**params)
     raise ValueError(f"unknown variant '{variant}'")

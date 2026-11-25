@@ -20,7 +20,7 @@ import numpy as np
 from autonav_baseline.datasets.groundtruth import load_pose_csv
 from autonav_baseline.datasets.registry import get_adapter
 from autonav_baseline.harness.config import (
-    PROFILES, REPO_ROOT, VARIANTS, parse_window, profile_cpus, resolve_dataset,
+    PROFILES, REPO_ROOT, SENSOR_MODELS, VARIANTS, parse_window, profile_cpus, resolve_dataset,
 )
 from autonav_baseline.harness.env import collect_environment, git_info
 from autonav_baseline.lidar.odometry import RegistrationGate
@@ -73,7 +73,7 @@ def new_run_id(dataset: str, variant: str, profile: str, commit: str) -> str:
 
 def execute(dataset_id: str, window: Optional[str], variant: str, profile: str, repeats: int = 3,
             warmup: int = 3, mode: str = "pipeline", voxel: float = 0.15, label: str = "",
-            argv: Optional[List[str]] = None) -> Path:
+            argv: Optional[List[str]] = None, sensor: str = "native") -> Path:
     if variant not in VARIANTS:
         raise ValueError(f"variant must be one of {VARIANTS}")
     if profile not in PROFILES:
@@ -84,12 +84,28 @@ def execute(dataset_id: str, window: Optional[str], variant: str, profile: str, 
     if mode == "pipeline" and not ds["consecutive"]:
         raise ValueError(f"'{dataset_id}' is NOT consecutive: odometry is not allowed. Use --mode single-frame.")
 
+    if sensor not in SENSOR_MODELS:
+        raise ValueError(f"sensor must be one of {list(SENSOR_MODELS)}")
+    model = SENSOR_MODELS[sensor]
+    altitudes = None
+    if ds.get("beam_altitudes"):
+        altitudes = json.loads((REPO_ROOT / ds["beam_altitudes"]).read_text(encoding="utf-8"))["beam_altitude_angles_deg"]
+    from autonav_baseline.lidar.sensor_emulation import describe
+    sensor_desc = describe(sensor, model, ds.get("organized"), altitudes)
+    sensor_desc["derived_from"] = ds["sensor"]
+    stride = sensor_desc["frame_stride"]
+    nominal_hz = ds["nominal_hz"] / stride
+    ds = dict(ds, nominal_hz=nominal_hz)
+    if sensor != "native":
+        ds["evidence"] = "EMULATED"  # a real recording reshaped into another sensor's beams/columns/rate
+
     adapter = get_adapter(ds["adapter"], root_path=Path(ds["frames"]) if ds["frames"] else None)
     n_total = adapter.inspect().frame_count
     start, stop = parse_window(window or ds["default_window"], n_total)
 
     git = git_info()
-    run_id = new_run_id(dataset_id, f"{variant}{'-sf' if mode == 'single-frame' else ''}", profile, git["commit"])
+    tag = "" if sensor == "native" else "_" + sensor.replace("@", "-at-")
+    run_id = new_run_id(dataset_id + tag, f"{variant}{'-sf' if mode == 'single-frame' else ''}", profile, git["commit"])
     run_dir = RUNS_DIR / run_id
     run_dir.mkdir(parents=True, exist_ok=False)
     (run_dir / "logs").mkdir()
@@ -115,7 +131,9 @@ def execute(dataset_id: str, window: Optional[str], variant: str, profile: str, 
         rep_dir.mkdir(parents=True)
         spec = {"rep": rep, "adapter": ds["adapter"], "frames": ds["frames"], "window": [start, stop],
                 "warmup": warmup, "mode": mode, "variant": variant, "params": params,
-                "nominal_hz": ds["nominal_hz"], "cpus": cpus}
+                "nominal_hz": ds["nominal_hz"], "cpus": cpus,
+                "sensor": {"id": sensor, "model": model, "organized": ds.get("organized"), "altitudes": altitudes,
+                           "layout": ds.get("layout", "row-major")}}
         (rep_dir / "spec.json").write_text(json.dumps(spec), encoding="utf-8")
         (run_dir / "progress.json").write_text(json.dumps({"repeat": rep + 1, "repeats": repeats, "status": "running"}))
         with open(run_dir / "logs" / f"rep{rep}.log", "w", encoding="utf-8") as log:
@@ -138,7 +156,8 @@ def execute(dataset_id: str, window: Optional[str], variant: str, profile: str, 
         "git": git, "mode": mode, "variant": variant,
         "dataset": {k: ds[k] for k in ("id", "sensor", "sequence", "licence", "evidence", "consecutive", "nominal_hz",
                                        "same_sensor_as_target")},
-        "window": {"start": start, "stop": stop, "n_frames": stop - start, "of_total": n_total},
+        "window": {"start": start, "stop": stop, "n_frames": len(range(start, stop, stride)), "of_total": n_total},
+        "sensor_model": sensor_desc,
         "parameters": params, "registration_gate": RegistrationGate().to_dict() if mode == "pipeline" else None,
         "profile": {"id": profile, "claim": prof["claim"], "threads": prof["threads"]},
         "methodology": {"repeats": repeats, "warmup_frames_excluded": warmup, "initial_frame_excluded": True,
