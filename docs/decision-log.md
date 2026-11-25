@@ -242,3 +242,67 @@ All significant design and engineering decisions are recorded here with context,
 | **Status** | DECIDED by the owner: "Plain push, keep history" |
 | **What was done** | The branch was pushed to `master` as a fast-forward (no force). Git history was not rewritten, so one old README line with a Windows user-profile path remains in public history (commit 337d95a); the tip no longer contains it. A targeted rewrite (option B) was prepared and verified in a throwaway clone (0 commits with the path, all 62 commits and authors kept, 75 tests pass) but was not pushed. A verified `git bundle` of the previous history is kept outside the repository. |
 | **Deploy** | `.github/workflows/pages.yml` builds `site/` (showcase mode, `SITE_BASE=/Baseline_tests_for_AutoNav/`) and deploys to GitHub Pages. Enabling Pages may need Settings -> Pages -> Source: GitHub Actions. |
+
+---
+
+# v2 — Sensor and compute sizing (2026-11-25)
+
+The question changes from "does this Python pipeline meet 100 ms?" to the funding question it was always
+for: **which LiDAR and which onboard computer, justified so neither has to be replaced later.** DEC-024 to
+DEC-030 were written before any v2 result was seen.
+
+## DEC-024 — Compiled registration through small_gicp
+
+| Field | Value |
+|-------|-------|
+| **Date** | 2026-11-25 |
+| **Decision** | Add `c-icp` (point-to-point ICP, the baseline algorithm) and `c-gicp` (GICP, constant-velocity guess) through `small_gicp` 1.0.1 (Koide, JOSS 2024, MIT, PyPI wheel). Filters, voxel size, correspondence distance, iteration cap, validity gate and pose convention are shared with the Python variants. |
+| **Why** | A drone runs compiled code. Python measurements show where the time goes; sizing must use what would fly. `c-icp` against `baseline` isolates the implementation cost (same estimator, trajectories agree to millimetres in the unit test); `c-gicp` is the production-style estimator. |
+| **Alternatives** | KISS-ICP (no wheel for Python 3.14; building it from source was not permitted in this session); Open3D ICP (heavier dependency, slower in published comparisons); FAST-LIO2 (needs ROS and IMU fusion: the right next step, out of scope here). |
+| **Gate residual** | `c-icp`: RMS inlier residual from the solver's final error (error = 0.5 Σr², verified), at least as strict as the mean. `c-gicp`: mean nearest-neighbour residual measured after alignment; its cost is inside `register_ms`. |
+
+## DEC-025 — Emulate candidate sensors from a 128-beam recording
+
+| Field | Value |
+|-------|-------|
+| **Decision** | Use the Newer College 2021 Ouster OS0-128 (128 beams, 90° vertical FOV, 1024 columns, 10 Hz) and derive cheaper sensors by dropping beam rows, columns, returns or frames before the pipeline sees the scan (`lidar/sensor_emulation.py`). Models: 128b-512c, 64b/32b/16b at 90°, 64b/32b at 45° (OS1 class: the central beams, same 0.7° spacing), 16 beams at 30° (VLP-16 class), Mid-360 point budget (−7..+46°, 20,000 returns per scan), each also at 5 Hz. |
+| **What it is not** | Not the target sensors' optics, range noise, exact elevations, maximum range or (Livox) non-repetitive pattern. Results are tagged `EMULATED` and name the real source sensor. |
+| **Layout check** | The 2020 OS1-64 PCDs are stored column by column (index = col·64 + row) despite a `WIDTH 1024 / HEIGHT 64` header; the 2021 OS0-128 clouds are checked the same way (row elevations must be monotonic) before any emulated run. |
+
+## DEC-026 — Data selection, declared before running
+
+| Field | Value |
+|-------|-------|
+| **Windows** | Newer College 2021 collection 1, quad-easy / quad-medium / quad-hard: the 30 s from ground-truth start + 120 s (95th-percentile angular rate 27 / 53 / 145 °/s: walking to aggressive, drone-like yaw). Stairs: + 30 s to + 60 s (confined, vertical motion). Newer College 2020 bag 9 and the Oxford Spires window are kept for continuity with v1. |
+| **Download** | `tools/fetch_bag_window.py` reads the bag index by HTTP range requests and downloads only the chunks that overlap the window (about 1.6 GB of a 10 GB bag). Raw data lives outside the repository and is deleted when the study ends. |
+| **Ground truth** | 2021 poses are of the `base` frame; the dataset's calibration gives base ← sensor as a 9.1 cm translation with identity rotation, so the lever-arm bias of DEC-022 is about 0.1 m at most and smaller in practice. |
+
+## DEC-027 — Real-time rule for sizing (declared before results)
+
+| Field | Value |
+|-------|-------|
+| **FEASIBLE** | Over all measured frames of all repeats: P99 of pipeline latency ≤ **50 %** of the frame period, and **no** frame above the full period. The other 50 % is reserved for mapping, planning, control and the OS on the same computer. |
+| **MARGINAL** | P99 ≤ 100 % of the period (it keeps up, but leaves nothing for the rest of the stack). |
+| **INFEASIBLE** | Otherwise. |
+| **Why 50 %** | An engineering margin, not a measurement (`ASSUMED`): odometry is one of several real-time tasks, and sustained clocks on a sealed drone computer are lower than on a ventilated laptop. |
+
+## DEC-028 — Accuracy rule for a sensor (declared before results)
+
+| Field | Value |
+|-------|-------|
+| **ADEQUATE** | On a window: ≥ 99 % of registrations accepted by the gate, translational RPE over 10 m ≤ **2 %**, and ATE RMSE ≤ **0.30 m** over the 30 s window. |
+| **Why** | `ASSUMED` targets for a small indoor/outdoor drone without loop closure: 2 % of 10 m is 0.2 m of drift, a fraction of a typical 1 m obstacle clearance; scan-to-scan odometry is the weakest link and a map/IMU can only improve it. The thresholds are shown next to the raw numbers so a reader can apply their own. |
+
+## DEC-029 — Compute tiers and what they stand for
+
+| Field | Value |
+|-------|-------|
+| **Measured on this laptop** (i5-13420H, Ubuntu 26.04) | `laptop-full` (12 threads), `laptop-4c` / `laptop-1c` (performance cores), `laptop-4e` / `laptop-1e` (efficiency cores: Gracemont up to 3.4 GHz, the core of the Intel N100, so a labelled **proxy** for N100-class boards; cache, memory and sustained clock differ). |
+| **Measured in the cloud** | GitHub `ubuntu-24.04-arm` (ARM Neoverse server VM) and `ubuntu-24.04` (x86 VM), same Spires workload, compiled and Python variants. |
+| **Not measured** | Raspberry Pi 5, Jetson Orin, RK3588 boards. Any statement about them is a projection from the measured tiers using published single-thread benchmark ratios, tagged `ASSUMED`, with the source named. |
+
+## DEC-030 — Measurement conditions on Ubuntu
+
+| Field | Value |
+|-------|-------|
+| **Decision** | v2 is measured on the same laptop as v1 but under Ubuntu, on AC power, with the cpufreq governor, energy-performance preference and AC state recorded in every `run.json` (`power_plan`). The Windows v1 runs stay published as history and are not mixed with v2 in any comparison. |

@@ -1,0 +1,21 @@
+{
+  "dataset": "newer_college_bag9",
+  "configured_layout": "column-major",
+  "organized": [
+    64,
+    1024
+  ],
+  "frames_checked": 5,
+  "layouts": {
+    "row-major": {
+      "median_abs_row_elevation_minus_beam_altitude_deg": 7.836500014153419,
+      "rows_monotonic_in_all_frames": false
+    },
+    "column-major": {
+      "median_abs_row_elevation_minus_beam_altitude_deg": 8.22121304366874e-09,
+      "rows_monotonic_in_all_frames": true
+    }
+  },
+  "detected_layout": "column-major",
+  "matches_configuration": true
+}

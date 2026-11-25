@@ -56,9 +56,28 @@ def _power_plan() -> str:
         if sys.platform == "win32":
             out = subprocess.check_output(["powercfg", "/getactivescheme"], text=True, stderr=subprocess.DEVNULL)
             return out.split("(")[-1].strip(") \r\n")
+        if sys.platform.startswith("linux"):
+            return _linux_power()
     except Exception:
         pass
     return "UNKNOWN"
+
+
+def _read(path: str) -> str:
+    try:
+        with open(path, encoding="utf-8") as f:
+            return f.read().strip()
+    except OSError:
+        return "?"
+
+
+def _linux_power() -> str:
+    """cpufreq governor(s), energy-performance preference and AC state, e.g. 'governor=performance epp=performance ac=1'."""
+    import glob
+    govs = sorted({_read(p) for p in glob.glob("/sys/devices/system/cpu/cpu*/cpufreq/scaling_governor")})
+    epps = sorted({_read(p) for p in glob.glob("/sys/devices/system/cpu/cpu*/cpufreq/energy_performance_preference")})
+    acs = [_read(p) for p in glob.glob("/sys/class/power_supply/*/online")]
+    return f"governor={'/'.join(govs) or '?'} epp={'/'.join(epps) or '?'} ac={'/'.join(acs) or '?'}"
 
 
 def collect_environment() -> Dict[str, Any]:
