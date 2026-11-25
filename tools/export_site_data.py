@@ -68,7 +68,7 @@ def scan(text: str, where: str):
     """Abort the export if a file contains a machine path, e-mail address, Drive link or Drive-id-like token."""
     home = Path.home().name
     pats = [r"[A-Za-z]:[\\/]+Users[\\/]", r"/home/[a-z]", r"/Users/[A-Za-z]", r"drive\.google\.com",
-            r"[\w.+-]+@[\w-]+\.[\w.-]+", r"(?<![A-Za-z0-9_-])(?=[A-Za-z0-9_-]*[A-Z])(?=[A-Za-z0-9_-]*[a-z])(?=[A-Za-z0-9_-]*\d)[A-Za-z0-9_-]{33}(?![A-Za-z0-9_-])"]
+            r"[\w.+-]+@[A-Za-z0-9-]+(?:\.[A-Za-z0-9-]+)*\.[A-Za-z]{2,}\b", r"(?<![A-Za-z0-9_-])(?=[A-Za-z0-9_-]*[A-Z])(?=[A-Za-z0-9_-]*[a-z])(?=[A-Za-z0-9_-]*\d)[A-Za-z0-9_-]{33}(?![A-Za-z0-9_-])"]
     if home and len(home) > 3:
         pats.append(re.escape(home))
     bad = [p for p in pats if re.search(p, text)]

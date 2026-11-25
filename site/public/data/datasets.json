@@ -25,5 +25,41 @@
     "consecutive": true,
     "nominal_hz": 10.0,
     "same_sensor_as_target": false
+  },
+  "ncd21_quad_easy": {
+    "sensor": "Ouster OS0-128 Rev C (128 beams, 1024 columns, 90 deg vertical FOV, 10 Hz)",
+    "sequence": "Newer College Multi-Cam 2021, collection 1, quad-easy: 30 s window from ground-truth start + 120 s",
+    "licence": "CC BY-NC-SA 4.0",
+    "evidence": "REAL",
+    "consecutive": true,
+    "nominal_hz": 10.0,
+    "same_sensor_as_target": false
+  },
+  "ncd21_quad_medium": {
+    "sensor": "Ouster OS0-128 Rev C (128 beams, 1024 columns, 90 deg vertical FOV, 10 Hz)",
+    "sequence": "Newer College Multi-Cam 2021, collection 1, quad-medium: 30 s window from ground-truth start + 120 s",
+    "licence": "CC BY-NC-SA 4.0",
+    "evidence": "REAL",
+    "consecutive": true,
+    "nominal_hz": 10.0,
+    "same_sensor_as_target": false
+  },
+  "ncd21_quad_hard": {
+    "sensor": "Ouster OS0-128 Rev C (128 beams, 1024 columns, 90 deg vertical FOV, 10 Hz)",
+    "sequence": "Newer College Multi-Cam 2021, collection 1, quad-hard: 30 s window from ground-truth start + 120 s",
+    "licence": "CC BY-NC-SA 4.0",
+    "evidence": "REAL",
+    "consecutive": true,
+    "nominal_hz": 10.0,
+    "same_sensor_as_target": false
+  },
+  "ncd21_stairs": {
+    "sensor": "Ouster OS0-128 Rev C (128 beams, 1024 columns, 90 deg vertical FOV, 10 Hz)",
+    "sequence": "Newer College Multi-Cam 2021, collection 1, stairs: 30 s window from ground-truth start + 30 s",
+    "licence": "CC BY-NC-SA 4.0",
+    "evidence": "REAL",
+    "consecutive": true,
+    "nominal_hz": 10.0,
+    "same_sensor_as_target": false
   }
 }

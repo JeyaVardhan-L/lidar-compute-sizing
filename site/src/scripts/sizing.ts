@@ -41,40 +41,41 @@ const vline = (x: number, label: string) => ({
     ], layout('Frame time by implementation (bag 9, laptop)', 'ms per frame', { barmode: 'group', bargap: 0.3, bargroupgap: 0.08, shapes: [d.shape], annotations: [d.ann] }), cfg);
   }
 
-  // 3. cost: points after voxel vs P99, by tier
-  const tiers = [['laptop-full', 'laptop, 12 threads'], ['laptop-4e', '4 E-cores (N100-class proxy)'], ['laptop-1e', '1 E-core']];
-  const cost = rows.filter((r) => r.variant === 'c-gicp' && r.voxel_m === 0.15 && r.rate_hz === 10 && r.dataset.startsWith('ncd21'));
+  // 3. cost: points after voxel vs median frame time, pinned tiers, runs that kept tracking
+  const tiers = [['laptop-4e', '4 E-cores (N100-class proxy)'], ['laptop-1e', '1 E-core']];
+  const cost = rows.filter((r) => r.variant === 'c-gicp' && r.voxel_m === 0.15 && (r.accepted_pct ?? 0) >= 99 && r.dataset.startsWith('ncd21'));
   const tr: any[] = tiers.map(([t, lbl], i) => {
     const rr = cost.filter((r) => r.profile === t);
-    return { x: rr.map((r) => r.points_voxel_p50 / 1000), y: rr.map((r) => r.latency_ms.p99), mode: 'markers', name: lbl,
+    return { x: rr.map((r) => r.points_voxel_p50 / 1000), y: rr.map((r) => r.latency_ms.p50), mode: 'markers', name: lbl,
       marker: { color: S[i], size: 9, line: { color: '#fff', width: 2 } },
-      text: rr.map((r) => `${r.sensor.label}<br>${r.motion}`), hovertemplate: '%{text}<br>%{x:.1f} k points after voxel<br>P99 %{y:.1f} ms<extra>' + lbl + '</extra>' };
+      text: rr.map((r) => `${r.sensor.label}<br>${r.motion}, ${r.rate_hz} Hz`), hovertemplate: '%{text}<br>%{x:.1f} k points after voxel<br>median %{y:.1f} ms<extra>' + lbl + '</extra>' };
   });
   for (const [i, [t]] of tiers.entries()) {
     const m = (data.cost_model || []).find((c: any) => c.variant === 'c-gicp' && c.profile === t);
     if (m) tr.push({ x: m.kpts_range, y: m.kpts_range.map((k: number) => m.a_ms + m.b_ms_per_kpt * k), mode: 'lines', line: { color: S[i], width: 2, dash: 'dot' },
-      name: `fit (median) ${t}`, showlegend: false, hovertemplate: `fit: ${m.a_ms.toFixed(1)} ms + ${m.b_ms_per_kpt.toFixed(2)} ms per 1000 points<extra></extra>` });
+      name: `cost model, ${t}`, showlegend: false, hovertemplate: `model: ${m.a_ms.toFixed(1)} ms + ${m.b_ms_per_kpt.toFixed(2)} ms per 1000 points (R² ${m.r2.toFixed(2)})<extra></extra>` });
   }
-  const h50 = hline(50, '50 ms: the FEASIBLE limit'), h100 = hline(100, '100 ms period');
-  Plotly.react('c-cost', tr, layout('P99 frame time against points per scan (compiled GICP, 10 Hz sensors)', 'P99 ms', {
+  const h50 = hline(50, '50 ms: the FEASIBLE limit at 10 Hz'), h100 = hline(100, '100 ms period');
+  Plotly.react('c-cost', tr, layout('Median frame time against points per scan (compiled GICP, pinned cores)', 'median ms per scan', {
     xaxis: { title: 'thousand points after the 0.15 m voxel filter', gridcolor: hair, zeroline: false }, shapes: [h50.shape, h100.shape], annotations: [h50.ann, h100.ann] }), cfg);
 
-  // 4. board projection
-  const proj = (data.projection || []).find((p: any) => p.sensor === data.recommendation?.at_10hz?.sensor?.sensor) || (data.projection || [])[0];
+  // 4. board projection (4 cores; ASSUMED)
+  const pick = data.posthoc?.at_10hz?.sensor?.sensor;
+  const proj = (data.projection || []).find((p: any) => p.sensor === pick && p.dataset === 'ncd21_quad_hard');
   if (proj) {
-    const b = [...proj.boards].sort((a: any, c: any) => a.p99_single_thread_ms - c.p99_single_thread_ms);
+    const b = proj.boards.filter((x: any) => x.p99_4c_ms != null).sort((a: any, c: any) => a.p99_4c_ms - c.p99_4c_ms);
     const v50 = vline(proj.period_ms * 0.5, '50 %'), v100 = vline(proj.period_ms, '100 ms');
     Plotly.react('c-boards', [{
-      y: b.map((x: any) => x.board), x: b.map((x: any) => x.p99_single_thread_ms), type: 'bar', orientation: 'h', marker: { color: S[0] },
-      error_x: { type: 'data', symmetric: false, array: b.map((x: any) => x.p99_range_ms[1] - x.p99_single_thread_ms), arrayminus: b.map((x: any) => x.p99_single_thread_ms - x.p99_range_ms[0]), color: mid, thickness: 1.5 },
-      hovertemplate: '%{y}<br>projected P99 %{x:.0f} ms (1 thread)<extra>ASSUMED</extra>',
-    }], layout('Projected P99, one thread, hardest motion (ASSUMED)', '', { margin: { l: 230, r: 24, t: 40, b: 48 },
-      xaxis: { title: 'ms per frame', gridcolor: hair, zeroline: false }, shapes: [v50.shape, v100.shape], annotations: [v50.ann, v100.ann], showlegend: false }), cfg);
+      y: b.map((x: any) => x.board), x: b.map((x: any) => x.p99_4c_ms), type: 'bar', orientation: 'h', marker: { color: S[0] },
+      error_x: { type: 'data', symmetric: false, array: b.map((x: any) => x.p99_4c_range_ms[1] - x.p99_4c_ms), arrayminus: b.map((x: any) => x.p99_4c_ms - x.p99_4c_range_ms[0]), color: mid, thickness: 1.5 },
+      hovertemplate: '%{y}<br>projected P99 %{x:.0f} ms (4 cores)<extra>ASSUMED</extra>',
+    }], layout('Projected P99 on 4 cores, hardest motion (ASSUMED)', '', { margin: { l: 230, r: 24, t: 40, b: 48 },
+      xaxis: { title: 'ms per scan', gridcolor: hair, zeroline: false }, shapes: [v50.shape, v100.shape], annotations: [v50.ann, v100.ann], showlegend: false }), cfg);
   }
 
   // 6. accuracy vs points per second, by motion level
   const W = [['ncd21_quad_easy', 'easy'], ['ncd21_quad_medium', 'medium'], ['ncd21_quad_hard', 'hard'], ['ncd21_stairs', 'stairs']];
-  const acc = rows.filter((r) => r.variant === 'c-gicp' && r.profile === 'laptop-full' && r.phase === 'C' && r.rpe10_pct != null);
+  const acc = rows.filter((r) => r.variant === 'c-gicp' && r.profile === 'laptop-full' && r.phase === 'C' && r.rpe10_pct != null && (r.accepted_pct ?? 0) >= 90);
   const at = W.map(([d, lbl], i) => {
     const rr = acc.filter((r) => r.dataset === d);
     return { x: rr.map((r) => r.points_per_s / 1000), y: rr.map((r) => r.rpe10_pct), mode: 'markers', name: lbl,
@@ -83,5 +84,5 @@ const vline = (x: number, label: string) => ({
   });
   const r2 = hline(2, '2 % accuracy rule');
   Plotly.react('c-acc', at, layout('Drift against sensor output (circle 10 Hz, diamond 5 Hz)', 'RPE over 10 m (% of distance)', {
-    xaxis: { title: 'thousand points per second (sensor output)', type: 'log', gridcolor: hair, zeroline: false }, shapes: [r2.shape], annotations: [r2.ann] }), cfg);
+    xaxis: { title: 'thousand points per second (sensor output)', type: 'log', tickvals: [100, 200, 500, 1000, 1300], ticktext: ['100', '200', '500', '1000', '1300'], gridcolor: hair, zeroline: false }, shapes: [r2.shape], annotations: [r2.ann] }), cfg);
 })();

@@ -1,62 +1,58 @@
 ---
 import Layout from '../layouts/Layout.astro';
 import Num from '../components/Num.astro';
-import Verdicts from '../components/Verdicts.astro';
-import { runs, base } from '../lib/data';
-const all = runs();
-const primary = all.find((r) => r.mode === 'pipeline' && r.dataset === 'newer_college_bag9' && r.variant === 'baseline' && r.profile === 'laptop-full');
+import { readJson, base } from '../lib/data';
+const S: any = readJson('sizing.json', null);
+const n = S?.generated_from_runs ?? 0;
+const pick = S?.posthoc?.at_10hz?.sensor;
 ---
-<Layout title="Overview" description="A reproducible study of whether scan-to-scan LiDAR odometry meets a 10 Hz sensor's 100 ms deadline.">
+<Layout title="Overview" description="Which LiDAR and which onboard computer can run real-time LiDAR odometry: measured on real recordings, emulated sensors and pinned compute tiers.">
   <section class="wrap section">
-    <p class="caption">A · Research overview</p>
-    <h1 style="max-width:18ch">Can LiDAR odometry keep up with a 10 Hz sensor?</h1>
-    <p style="font-size:18px;margin-top:16px;max-width:70ch">A reproducible study measuring whether scan-to-scan LiDAR odometry can meet a 10 Hz sensor's 100 ms deadline, what it costs in accuracy, and what it takes to close the gap, built before committing to robot hardware.</p>
-    <p class="muted">It is a measurement study, not a navigation system. Every result is labelled with the hardware it ran on.</p>
-    <div class="grid cols-3" style="margin-top:24px">
-      <div class="card stat"><div class="caption">Sensor period</div><div class="value">100 ms</div><p class="muted">1 / 10 Hz. A frame that takes longer delays every later frame.</p></div>
-      <div class="card stat"><div class="caption">Primary dataset</div><div class="value">OS1-64</div><p class="muted">Newer College 2020, Ouster OS1-64 Gen1, 64 beams, 10 Hz, with ground truth.</p></div>
-      {primary && <div class="card stat"><div class="caption">Baseline median latency</div><div class="value"><Num run={primary.run_id} path="latency_ms.total_ms.p50" digits={0} /> ms</div><p class="muted">Development laptop, no limits. {primary.hardware_label}.</p></div>}
+    <p class="caption">A · Overview</p>
+    <h1 style="max-width:20ch">Which LiDAR and which onboard computer keep up?</h1>
+    <p style="font-size:18px;margin-top:16px;max-width:72ch">A robot that localises with LiDAR odometry must finish each scan before the next one arrives (100 ms at 10 Hz) and still leave time for mapping, planning and control. This study measures what that takes, on real recordings with ground truth, before any hardware is bought: which sensor resolution is needed, which computer, and where the method itself stops working.</p>
+    <p class="muted">{n} measured runs. Every number on this site is read from a run record and tagged MEASURED, DERIVED, EMULATED or ASSUMED.</p>
+  </section>
+
+  {S && (
+  <section class="wrap section" style="padding-top:0">
+    <h2>What the measurements say</h2>
+    <div class="grid four" style="margin-top:16px">
+      <div class="card"><div class="caption">1 · The language, not the algorithm <span class="evidence">MEASURED</span></div>
+        <div class="stat"><div class="value"><Num file="sizing.json" path="headline.python_over_compiled_same_algorithm" digits={1} />× faster</div></div>
+        <p>The same ICP algorithm in compiled code instead of Python: <Num file="sizing.json" path="headline.bag9_c_icp_p50_ms" digits={1} /> ms instead of <Num file="sizing.json" path="headline.bag9_baseline_p50_ms" digits={0} /> ms per scan (median) on the same 64-beam scans and the same laptop. Switching to GICP also cut position error from <Num file="sizing.json" path="headline.bag9_baseline_ate_m" digits={2} /> m to <Num file="sizing.json" path="headline.bag9_c_gicp_ate_m" digits={2} /> m.</p></div>
+      <div class="card"><div class="caption">2 · How many points the sensor must deliver <span class="evidence">POST-HOC · EMULATED</span></div>
+        <div class="stat"><div class="value"><Num file="sizing.json" path="headline.posthoc_points_per_s_k" digits={0} /> k points/s</div></div>
+        <p>{pick ? pick.label : '64 beams'} at 10 Hz (or the same point rate at 45° or as 128 × 512) tracked walking-pace motion within the 2 % drift rule. Sensors with 32 beams or fewer lost track at medium motion; a Mid-360-like point budget passed easy motion and missed medium by one rejected scan.</p></div>
+      <div class="card"><div class="caption">3 · How much computer <span class="evidence">MEASURED</span></div>
+        <div class="stat"><div class="value">4 cores, N100 class</div></div>
+        <p>On four pinned efficiency cores (the core design of the Intel N100) that sensor needs <Num file="sizing.json" path="headline.posthoc_hard_4e_p99_ms" digits={0} /> ms per scan at the 99th percentile on the hardest motion, inside the 50 ms half-budget; one such core needs <Num file="sizing.json" path="headline.posthoc_hard_1e_p99_ms" digits={0} /> ms and cannot keep up.</p></div>
+      <div class="card"><div class="caption">4 · Where the method stops <span class="evidence">MEASURED</span></div>
+        <div class="stat"><div class="value"><Num file="sizing.json" path="headline.hard_native_rpe10_pct" digits={1} /> % drift</div></div>
+        <p>With fast rotation (up to 34° between scans) even the full 128-beam sensor drifts this much over 10 m, and most cheaper sensors lose track. No sensor passes the rule declared before the results. Fast-turning platforms need IMU-aided odometry; more beams or cores do not fix it.</p></div>
     </div>
-  </section>
+    <p style="margin-top:20px"><a class="badge solid" style="text-decoration:none;padding:6px 14px" href={base + 'sizing/'}>See the full sizing analysis →</a></p>
+  </section>)}
 
   <section class="wrap section">
-    <h2>Current answer</h2>
-    {primary ? (
-      <>
-        <p class="muted">Verdicts below are generated by documented rules from the run's measurements (<span class="mono">{primary.run_id}</span>). They describe this machine and this dataset only.</p>
-        <Verdicts run={primary.run_id} />
-      </>
-    ) : <p class="notice">No run has been published yet. Run <code>autonav run</code>, then <code>autonav publish &lt;run-id&gt;</code> and export the site data.</p>}
-  </section>
-
-  <section class="wrap section">
-    <h2>How the question is answered</h2>
-    <div class="grid cols-2">
-      <div class="card"><h3>Pipeline</h3>
-        <svg role="img" aria-label="Pipeline: dataset adapter, preprocessing, ICP registration, validity gate, trajectory, evaluation, artifacts, site" viewBox="0 0 640 120" width="100%" style="max-width:640px">
-          {['Dataset', 'Preprocess', 'ICP', 'Gate', 'Pose', 'Evaluate'].map((t, i) => (
-            <g transform={`translate(${i * 106},30)`}><rect width="94" height="44" rx="10" fill="#fff" stroke="#e5e5e5" /><text x="47" y="27" text-anchor="middle" font-size="12" fill="#0a0a0a">{t}</text></g>
-          ))}
-          <text x="0" y="104" font-size="11" fill="#737373">Python writes run artifacts (JSON/CSV/binary). This site only renders them.</text>
-        </svg>
-        <p class="muted">Each stage is timed separately, in a fresh process per repeat, after warm-up frames are excluded.</p></div>
-      <div class="card"><h3>Method</h3>
-        <ul style="padding-left:18px;margin:0">
-          <li>Scan-to-scan point-to-point ICP with a validity gate; accuracy against ground truth where it exists.</li>
-          <li>Latency percentiles and the deadline <em>violation rate</em>, not just a percentile.</li>
-          <li>Three algorithm variants side by side: baseline, optimized, point-to-plane.</li>
-          <li>Hardware profiles: full laptop, 4 cores, 1 core. ARM cloud and Raspberry Pi 5 are listed separately.</li>
-        </ul></div>
+    <h2>How it was measured</h2>
+    <div class="grid three">
+      <div class="card"><h3>Real data, fetched selectively</h3><p class="muted">Newer College (2020 OS1-64, 2021 OS0-128) and Oxford Spires, with survey-grade ground truth. A range-request reader downloads only the 30 s windows needed from 10 GB recordings (about 1.2 GB each).</p></div>
+      <div class="card"><h3>Cheaper sensors from one real scan</h3><p class="muted">The 128-beam scans are reshaped into 64-, 32- and 16-beam sensors, narrower fields of view, fewer columns, a capped point budget and 5 Hz, after checking how each recording stores its rows.</p></div>
+      <div class="card"><h3>Five implementations, one frame loop</h3><p class="muted">Python ICP (plain and tuned), Python point-to-plane, and compiled ICP and GICP share one validity gate, pose convention and timer, so differences are the method or the language.</p></div>
+      <div class="card"><h3>Pinned compute tiers</h3><p class="muted">1 and 4 performance cores, 1 and 4 efficiency cores of one laptop on a fixed governor, plus ARM and x86 cloud machines on the same workload. Unpinned runs turned out bimodal and are not used for sizing.</p></div>
+      <div class="card"><h3>Rules before results</h3><p class="muted">"Keeps up" (P99 ≤ 50 % of the period), "accurate enough" (≤ 2 % drift over 10 m) and the selection rule were written into the decision log before any result; the one post-hoc analysis is labelled.</p></div>
+      <div class="card"><h3>Every number checked</h3><p class="muted">The site renders only exported artifacts; a build step compares every rendered number with the run records. Raw data is never committed.</p></div>
     </div>
   </section>
 
   <section class="wrap section">
     <h2>Scope and limits</h2>
-    <ul style="padding-left:18px;max-width:78ch">
-      <li>Measurements come from ordinary Python on a Windows laptop. They are not hard real-time guarantees and say nothing about other hardware, except the one-way inference stated in <a href={base + 'hardware/'}>section G</a>.</li>
-      <li>Odometry only: no loop closure, no IMU fusion, no mapping. Error accumulates with distance.</li>
-      <li>Two datasets with different sensors. Oxford Spires (Hesai QT64) is never presented as an OS1-64 result.</li>
-      <li>Unverified: ground-truth frame offset (see <a href={base + 'algorithm/'}>section C</a>), companion-computer performance, flight conditions.</li>
+    <ul style="padding-left:18px;max-width:80ch">
+      <li>Handheld recordings stand in for a moving platform; its own vibration and mounting are not represented.</li>
+      <li>Scan-to-scan odometry only: no IMU, no map, no loop closure. A full stack does more work per scan; the cost model is where its sizing starts.</li>
+      <li>Emulated sensors match beam count, field of view, points and rate, not the target's optics, noise or scan pattern.</li>
+      <li>Boards other than the measured laptop tiers and cloud machines are projections, tagged ASSUMED. Measure one candidate board before committing.</li>
     </ul>
   </section>
 </Layout>

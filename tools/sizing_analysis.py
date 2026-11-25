@@ -113,6 +113,8 @@ def row_for(run, s, run_dir):
         "latency_ms": {k: lat[k] for k in ("p50", "p95", "p99", "max")},
         "preprocess_p50_ms": s["latency_ms"]["preprocess_ms"]["p50"], "register_p50_ms": s["latency_ms"]["register_ms"]["p50"],
         "repeat_p50_range_ms": [s["repeat_spread"]["p50"]["min"], s["repeat_spread"]["p50"]["max"]],
+        # repeats whose medians differ by more than 10 % of their median: timing not reproducible (DEC-036)
+        "timing_unstable": (s["repeat_spread"]["p50"]["max"] - s["repeat_spread"]["p50"]["min"]) > 0.10 * s["repeat_spread"]["p50"]["median"],
         "violations": viol["violations"], "violation_pct": viol["violation_percent"],
         "p99_share_of_period_pct": share, "realtime_class": rt,
         "accepted_pct": accepted, "ate_rmse_m": ate, "rpe10_pct": rpe10, "accuracy_class": ac,
@@ -124,10 +126,14 @@ def row_for(run, s, run_dir):
 
 
 def cost_model(rows_by_run):
-    """total_ms = a + b * kpts_voxel per (variant, profile), from per-frame rep0 data."""
+    """total_ms = a + b * kpts_voxel per (variant, profile), from per-frame rep0 data.
+    Only runs that kept tracking (>= 99 % accepted) and only pinned compute tiers: a lost track inflates frame
+    time for reasons unrelated to point count, and the unpinned 12-thread profile is bimodal (DEC-036)."""
     groups = {}
     for r, run_dir in rows_by_run:
-        if r["phase"] not in ("C", "A", "B") or r["voxel_m"] != 0.15:
+        if r["phase"] not in ("A", "B", "C", "E") or r["voxel_m"] != 0.15 or (r["accepted_pct"] or 0) < 99.0:
+            continue
+        if r["variant"].startswith("c-") and r["profile"] == "laptop-full":
             continue
         f = run_dir / "frames.csv"
         if not f.is_file():
@@ -177,43 +183,51 @@ def scaling(rows):
                 out.append({"what": f"4 E-cores vs 1 E-core ({ds}, {v})",
                             "measured_speedup_p50": e1["latency_ms"]["p50"] / e4["latency_ms"]["p50"],
                             "note": "how much of the frame cost the compiled pipeline spreads over 4 cores"})
+    def lscpu_model(profile):  # recorded by the cloud workflow; Python cannot name ARM cores
+        f = REPO / "artifacts" / "validation" / f"lscpu_{profile}.txt"
+        if f.is_file():
+            for line in f.read_text().splitlines():
+                if line.startswith("Model name:"):
+                    return line.split(":", 1)[1].strip()
+        return None
     for v in ("c-gicp", "c-icp", "optimized", "baseline"):
         arm = _find(rows, dataset="oxford_spires", variant=v, profile="arm-cloud")
         x86 = _find(rows, dataset="oxford_spires", variant=v, profile="x86-cloud")
-        lap = _find(rows, dataset="oxford_spires", variant=v, profile="laptop-full", voxel_m=0.15)
         if arm and x86:
-            out.append({"what": f"ARM cloud vs x86 cloud (oxford_spires, {v})",
+            out.append({"what": f"ARM cloud vs x86 cloud, 4 vCPUs each (oxford_spires, {v})",
                         "measured_ratio_p50": arm["latency_ms"]["p50"] / x86["latency_ms"]["p50"],
-                        "arm_cpu": arm["cpu_model"], "x86_cpu": x86["cpu_model"]})
-        if arm and lap:
-            out.append({"what": f"ARM cloud vs this laptop, all cores (oxford_spires, {v})",
-                        "measured_ratio_p50": arm["latency_ms"]["p50"] / lap["latency_ms"]["p50"],
-                        "arm_cpu": arm["cpu_model"]})
+                        "arm_cpu": lscpu_model("arm-cloud") or arm["cpu_model"],
+                        "x86_cpu": lscpu_model("x86-cloud") or x86["cpu_model"]})
     return out
 
 
 def projection(rows, sensor_id, dataset="ncd21_quad_hard", variant="c-gicp"):
-    """ASSUMED: P99 on boards not measured = measured P-core single-thread P99 x (2200 / board score)."""
+    """ASSUMED projection to boards that were not measured, from two measured anchors:
+    1 thread:  P99 on one laptop P-core x (P-core score / board score)
+    4 cores:   P99 on four laptop E-cores x (N100 score / board score); E-cores = N100's core (DEC-029).
+    Board scores are published Geekbench 6 single-core results (sources listed)."""
     p1 = _find(rows, dataset=dataset, variant=variant, profile="laptop-1c", sensor=sensor_id, voxel_m=0.15)
-    e1 = _find(rows, dataset=dataset, variant=variant, profile="laptop-1e", sensor=sensor_id, voxel_m=0.15)
-    if not p1:
+    e4 = _find(rows, dataset=dataset, variant=variant, profile="laptop-4e", sensor=sensor_id, voxel_m=0.15)
+    if not (p1 or e4):
         return None
-    ref = GB6["i5-13420H P-core (this laptop)"]["score"]
-    out = {"sensor": sensor_id, "dataset": dataset, "variant": variant,
-           "anchor": {"profile": "laptop-1c", "p99_ms": p1["latency_ms"]["p99"], "p50_ms": p1["latency_ms"]["p50"]},
-           "anchor_e_core": None if not e1 else {"profile": "laptop-1e", "p99_ms": e1["latency_ms"]["p99"]},
-           "period_ms": p1["period_ms"], "boards": [],
-           "evidence": "ASSUMED (single-thread scaling by published Geekbench 6 single-core scores; not measured)"}
+    ref_p, ref_e = GB6["i5-13420H P-core (this laptop)"]["score"], GB6["Intel N100 (4x Gracemont, 3.4 GHz)"]["score"]
+    period = (p1 or e4)["period_ms"]
+    cls = lambda ms: "FEASIBLE" if 100 * ms / period <= FEASIBLE_SHARE else ("MARGINAL" if ms <= period else "INFEASIBLE")
+    out = {"sensor": sensor_id, "dataset": dataset, "variant": variant, "period_ms": period, "boards": [],
+           "anchor_1_thread": p1 and {"profile": "laptop-1c", "p99_ms": p1["latency_ms"]["p99"]},
+           "anchor_4_cores": e4 and {"profile": "laptop-4e", "p99_ms": e4["latency_ms"]["p99"]},
+           "evidence": "ASSUMED (scaled by published Geekbench 6 single-core scores; not measured)"}
     for name, b in GB6.items():
-        f = ref / b["score"]
-        lo, hi = ref / max(b["range"]), ref / min(b["range"])
-        p99 = p1["latency_ms"]["p99"] * f
-        out["boards"].append({"board": name, "gb6_single": b["score"], "factor": f,
-                              "p99_single_thread_ms": p99, "p99_range_ms": [p1["latency_ms"]["p99"] * lo, p1["latency_ms"]["p99"] * hi],
-                              "share_of_period_pct": 100 * p99 / p1["period_ms"],
-                              "class_single_thread": "FEASIBLE" if 100 * p99 / p1["period_ms"] <= FEASIBLE_SHARE else (
-                                  "MARGINAL" if p99 <= p1["period_ms"] else "INFEASIBLE"),
-                              "sources": b["src"]})
+        row = {"board": name, "gb6_single": b["score"], "cores": b.get("cores"), "sources": b["src"]}
+        if p1:
+            v = p1["latency_ms"]["p99"] * ref_p / b["score"]
+            row.update(p99_1t_ms=v, p99_1t_range_ms=[p1["latency_ms"]["p99"] * ref_p / max(b["range"]), p1["latency_ms"]["p99"] * ref_p / min(b["range"])],
+                       class_1t=cls(v))
+        if e4 and (b.get("cores") or 0) >= 4:
+            v = e4["latency_ms"]["p99"] * ref_e / b["score"]
+            row.update(p99_4c_ms=v, p99_4c_range_ms=[e4["latency_ms"]["p99"] * ref_e / max(b["range"]), e4["latency_ms"]["p99"] * ref_e / min(b["range"])],
+                       class_4c=cls(v), share_4c_pct=100 * v / period)
+        out["boards"].append(row)
     return out
 
 
@@ -256,6 +270,56 @@ def recommendation(rows):
     return out
 
 
+ENVELOPE = ["ncd21_quad_easy", "ncd21_quad_medium"]
+PINNED = ["laptop-1e", "laptop-4e", "laptop-1c", "laptop-4c"]
+
+
+def posthoc(rows):
+    """DEC-036 (written after the results): the same rules on the motion envelope where scan-to-scan LiDAR-only
+    odometry can work at all (easy and medium: up to ~53 deg/s at the 95th percentile), and only pinned tiers."""
+    by = {}
+    for r in rows:
+        if r["phase"] == "C" and r["variant"] == "c-gicp" and r["profile"] == "laptop-full" and r["dataset"] in ENVELOPE:
+            by.setdefault(r["sensor"]["id"], {})[r["dataset"]] = r
+    cands = []
+    for sid, per in by.items():
+        if set(per) != set(ENVELOPE):
+            continue
+        cands.append({"sensor": sid, "label": per[ENVELOPE[0]]["sensor"]["label"], "rate_hz": per[ENVELOPE[0]]["rate_hz"],
+                      "points_per_s": float(np.median([per[d]["points_per_s"] for d in ENVELOPE])),
+                      "adequate_envelope": all(per[d]["accuracy_class"] == "ADEQUATE" for d in ENVELOPE),
+                      "vfov_span_deg": float(np.diff(per[ENVELOPE[0]]["sensor"].get("vfov_deg") or [0, 0])[0])})
+    out = {"rule": "DEC-036 (post-hoc)", "envelope": ENVELOPE, "candidates": sorted(cands, key=lambda c: (c["rate_hz"], c["points_per_s"]))}
+    for hz in (10.0, 5.0):
+        # equal points per second: prefer the lower measured P99 on the hardest window with 4 pinned E-cores
+        # (a sensor that lost track there sorts last); the FOV tie-break of DEC-031 separated 91 deg from 92 deg
+        def hard_cost(c):
+            r = _find(rows, dataset="ncd21_quad_hard", variant="c-gicp", profile="laptop-4e", sensor=c["sensor"], voxel_m=0.15)
+            return r["latency_ms"]["p99"] if r and (r["accepted_pct"] or 0) >= 99.0 else None  # None: lost track / not run
+        for c in cands:
+            c["hard_4e_p99_ms"] = hard_cost(c)
+        ok = sorted([c for c in cands if c["adequate_envelope"] and c["rate_hz"] == hz],
+                    key=lambda c: (c["points_per_s"], c["hard_4e_p99_ms"] if c["hard_4e_p99_ms"] is not None else float("inf"), -c["vfov_span_deg"]))
+        pick = ok[0] if ok else None
+        alts = [c for c in ok[1:] if pick and c["points_per_s"] == pick["points_per_s"]]
+        res = {"sensor": pick, "same_cost_alternatives": alts, "tiers": {}}
+        if pick:
+            for ds in ("ncd21_quad_medium", "ncd21_quad_hard"):
+                tl = []
+                for t in PINNED:
+                    r = _find(rows, dataset=ds, variant="c-gicp", profile=t, sensor=pick["sensor"], voxel_m=0.15)
+                    if r:
+                        tl.append({"profile": t, "p50_ms": r["latency_ms"]["p50"], "p99_ms": r["latency_ms"]["p99"],
+                                   "share_pct": r["p99_share_of_period_pct"], "class": r["realtime_class"],
+                                   "tracking_held": (r["accepted_pct"] or 0) >= 99.0})
+                res["tiers"][ds] = tl
+            feas = [t for t in PINNED if all(any(x["profile"] == t and x["class"] == "FEASIBLE" for x in res["tiers"].get(ds, []))
+                                             for ds in ("ncd21_quad_medium", "ncd21_quad_hard"))]
+            res["weakest_feasible_pinned_tier"] = feas[0] if feas else None
+        out[f"at_{int(hz)}hz"] = res
+    return out
+
+
 def headline(rows):
     """Named scalar values the site renders through <Num file="sizing"> (checked by check-numbers)."""
     h = {}
@@ -269,6 +333,32 @@ def headline(rows):
             h[f"bag9_{key}_viol_pct"] = r["violation_pct"]
     if "bag9_baseline_p50_ms" in h and "bag9_c_icp_p50_ms" in h:
         h["python_over_compiled_same_algorithm"] = h["bag9_baseline_p50_ms"] / h["bag9_c_icp_p50_ms"]
+    nat = _find(rows, dataset="ncd21_quad_hard", variant="c-gicp", profile="laptop-full", sensor="native", phase="C")
+    if nat:
+        h["hard_native_rpe10_pct"] = nat["rpe10_pct"]
+        h["hard_native_ate_m"] = nat["ate_rmse_m"]
+    ph = posthoc(rows)["at_10hz"]
+    if ph.get("sensor"):
+        h["posthoc_points_per_s_k"] = ph["sensor"]["points_per_s"] / 1000.0
+        for t in ("laptop-4e", "laptop-1e", "laptop-4c", "laptop-1c"):
+            for ds, key in (("ncd21_quad_hard", "hard"), ("ncd21_quad_medium", "medium")):
+                r = _find(rows, dataset=ds, variant="c-gicp", profile=t, sensor=ph["sensor"]["sensor"], voxel_m=0.15)
+                if r:
+                    h[f"posthoc_{key}_{t[7:]}_p99_ms"] = r["latency_ms"]["p99"]
+        h["posthoc_weakest_tier"] = ph.get("weakest_feasible_pinned_tier")
+    full = [r for r in rows if r["variant"].startswith("c-") and r["profile"] == "laptop-full" and r["repeat_p50_range_ms"][0] > 0]
+    if full:
+        h["unpinned_max_spread_x"] = max(r["repeat_p50_range_ms"][1] / r["repeat_p50_range_ms"][0] for r in full)
+    pe = [r for r in rows if r["variant"].startswith("c-") and r["profile"] in ("laptop-4e", "laptop-1e")]
+    if pe:
+        h["pinned_e_max_spread_pct"] = max(100 * (r["repeat_p50_range_ms"][1] - r["repeat_p50_range_ms"][0]) / r["repeat_p50_range_ms"][0] for r in pe)
+    v1 = REPO / "artifacts" / "history" / "v1_windows_runs.json"
+    if v1.is_file() and "bag9_baseline_p50_ms" in h:
+        old = next((r for r in json.loads(v1.read_text())["runs"] if r["dataset"] == "newer_college_bag9" and r["variant"] == "baseline"
+                    and r["profile"] == "laptop-full" and r["mode"] == "pipeline"), None)
+        if old:
+            h["v1_windows_bag9_baseline_p50_ms"] = old["p50_ms"]
+            h["windows_over_ubuntu_same_laptop"] = old["p50_ms"] / h["bag9_baseline_p50_ms"]
     for t in ("laptop-full", "laptop-4c", "laptop-1c", "laptop-4e", "laptop-1e"):
         r = _find(rows, dataset="ncd21_quad_hard", variant="c-gicp", profile=t, sensor="native", voxel_m=0.15)
         if r:
@@ -307,7 +397,7 @@ def main() -> int:
         latest[r["label"]] = (r, rd)
     rows_by_run = list(latest.values())
     rows = [r for r, _ in rows_by_run]
-    recommended = ["native", "64b-45", "32b-45", "16b-30", "mid360-budget", "32b-90", "64b-90"]
+    recommended = ["64b-90", "128b-90-512c", "native"]
     out = {
         "generated_from_runs": len(rows),
         "rules": {"realtime": {"FEASIBLE": f"P99 <= {FEASIBLE_SHARE:.0f} % of the frame period and no frame above it",
@@ -317,15 +407,16 @@ def main() -> int:
         "rows": rows,
         "cost_model": cost_model(rows_by_run),
         "scaling": scaling(rows),
-        "projection": [p for p in (projection(rows, s) for s in recommended) if p],
+        "projection": [p for p in (projection(rows, s, ds) for s in recommended for ds in ("ncd21_quad_medium", "ncd21_quad_hard")) if p],
         "gb6_sources": GB6,
         "data_rate": data_rates(),
         "recommendation": recommendation(rows),
+        "posthoc": posthoc(rows),
     }
     out["headline"] = headline(rows)
     for dest in (REPO / "artifacts" / "sizing" / "sizing.json", REPO / "site" / "public" / "data" / "sizing.json"):
         dest.parent.mkdir(parents=True, exist_ok=True)
-        dest.write_text(json.dumps(out, indent=1, default=float), encoding="utf-8")
+        dest.write_text(json.dumps(out, indent=1, default=float, allow_nan=False), encoding="utf-8")  # strict JSON for the site
     print(f"{len(rows)} v2 runs -> artifacts/sizing/sizing.json and site/public/data/sizing.json")
     return 0
 

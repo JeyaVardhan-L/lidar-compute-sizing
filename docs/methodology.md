@@ -42,7 +42,7 @@ non-repetitive scan patterns.
 ## Compute profiles
 | Profile | How | Allowed claim |
 |---|---|---|
-| `laptop-full` | no limits (i5-13420H, 12 threads) | development-laptop performance |
+| `laptop-full` | no limits (i5-13420H, 12 threads) | development-laptop performance; compiled variants are bimodal here (DEC-036), so it is used for accuracy, not for sizing |
 | `laptop-4c`, `laptop-1c` | CPU affinity on performance cores + thread env vars | scaling with core count |
 | `laptop-4e`, `laptop-1e` | CPU affinity on efficiency cores (Gracemont, 3.4 GHz) | a labelled proxy for Intel N100-class compute (same core and peak clock; different cache, memory, sustained power) |
 | `arm-cloud`, `x86-cloud` | GitHub Actions runners, same Spires workload | real ARM Neoverse / x86 server VMs, shared and noisy; **not** drone computers |

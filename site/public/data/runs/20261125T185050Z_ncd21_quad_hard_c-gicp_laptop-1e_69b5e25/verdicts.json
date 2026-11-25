@@ -1,0 +1,70 @@
+{
+  "rules_version": 1,
+  "run_id": "20261125T185050Z_ncd21_quad_hard_c-gicp_laptop-1e_69b5e25",
+  "hardware_label": "Measured on 13th Gen Intel(R) Core(TM) i5-13420H (laptop-1e); not a Raspberry Pi, not embedded hardware",
+  "profile_claim": "One efficiency core (Gracemont, 3.4 GHz) of the development laptop: slow-core proxy, not embedded hardware.",
+  "evidence": "REAL",
+  "verdicts": [
+    {
+      "id": "deadline",
+      "question": "Did the pipeline meet the 100 ms deadline?",
+      "status": "fail",
+      "statement": "No. 100.0 % of 888 frames missed 100 ms. Median latency 172 ms is 1.7x the deadline; P99 is 259 ms.",
+      "rule": "pass: 0 violations; warn: 0 < violations <= 5 %; fail: violations > 5 %. Violation = per-frame pipeline latency (preprocess + register) strictly greater than the deadline.",
+      "evidence": {
+        "deadline_ms": 100.0,
+        "p50_ms": 172.2696,
+        "p95_ms": 228.416665,
+        "p99_ms": 258.67569899999995,
+        "max_ms": 278.3197,
+        "violation_percent": 100.0,
+        "frames_measured": 888
+      }
+    },
+    {
+      "id": "registration",
+      "question": "Did registration produce valid matches?",
+      "status": "pass",
+      "statement": "299 of 299 registrations passed the validity gate (100.0 %).",
+      "rule": "pass: >= 99 % accepted; warn: >= 90 %; fail: < 90 %. Accepted = passes the registration validity gate.",
+      "evidence": {
+        "attempts": 299,
+        "accepted": 299,
+        "rejected": 0,
+        "rejected_by_reason": {},
+        "icp_iterations_median": 3.0,
+        "inlier_ratio_median": 0.99827,
+        "residual_median_m": 0.12972
+      }
+    },
+    {
+      "id": "accuracy",
+      "question": "How accurate was the estimated trajectory?",
+      "status": "info",
+      "statement": "ATE RMSE 0.91 m (max 1.79 m) over 34.5 m of ground-truth path after rigid alignment; position RPE is reported per window in the summary. Both include any unmodelled sensor-to-body offset (lever arm) between the estimate and the ground-truth body frame, so they mix drift with extrinsic bias. Scan-to-scan odometry has no loop closure, so error accumulates with distance.",
+      "rule": "descriptive; no pass/fail threshold is applied to accuracy",
+      "evidence": {
+        "ate_rmse_m": 0.9050808142729438,
+        "ate_max_m": 1.7874834325395048,
+        "gt_path_length_m": 34.5408850560686,
+        "ate_rmse_percent_of_path": 2.6203173798348494,
+        "final_error_m": 1.3699653185728529,
+        "rpe_mode": "world_position_after_umeyama_alignment",
+        "rpe": {
+          "time_1s": 24.546027598047573,
+          "time_5s": 17.74218220251026,
+          "distance_5m": 18.197440953596296,
+          "distance_10m": 11.652733841999815
+        }
+      }
+    },
+    {
+      "id": "sensor",
+      "question": "Does this result describe the OS1-64?",
+      "status": "warn",
+      "statement": "No. This dataset uses a different sensor (Ouster OS0-128 Rev C (128 beams, 1024 columns, 90 deg vertical FOV, 10 Hz)); do not read it as an OS1-64 result.",
+      "rule": "dataset.same_sensor_as_target is false",
+      "evidence": {}
+    }
+  ]
+}

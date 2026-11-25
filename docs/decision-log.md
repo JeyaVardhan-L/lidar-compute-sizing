@@ -347,3 +347,23 @@ DEC-030 were written before any v2 result was seen.
 |-------|-------|
 | **Found** | The first phase-A runs (all `laptop-full`) ran while the dataset downloads were still active, pinned to logical CPU 11. `laptop-full` lets the compiled variants use all 12 logical CPUs, CPU 11 included, and their P99 (81-102 ms) was far above their median (15-17 ms) and above the same code on 4 performance cores. |
 | **Decision** | All phase-A runs were deleted and re-measured by the resumable campaign after every download had finished. Phase B (`laptop-4c/1c` use CPUs 0-6; the E-core profiles started after the downloads ended) was kept. |
+
+## DEC-036 — Results against the declared rules, and the one post-hoc analysis
+
+| Field | Value |
+|-------|-------|
+| **Date** | 2026-11-26, written **after** the campaign results |
+| **Declared-rule result (DEC-031)** | **No sensor is selected.** Every emulated sensor is INADEQUATE on quad-hard: the full 128-beam scan keeps tracking (100 % accepted) but drifts 11.6 % over 10 m (ATE 0.90 m); most cheaper sensors lose track (≤ 11 % accepted). Scan-to-scan LiDAR-only odometry cannot follow up to 34° of rotation between scans; this is a limit of the method (it needs inertial aiding or deskewing), not of sensor resolution or compute. This result is reported first, everywhere. |
+| **Post-hoc envelope** | The same accuracy and real-time rules applied to the motion where the method works at all: quad-easy and quad-medium (95th-percentile turn rate ≤ 53 °/s). Sensor = fewest points per second ADEQUATE on both; ties at equal points per second broken by the lower measured P99 on quad-hard with 4 pinned E-cores (the DEC-031 FOV tie-break would have separated 91° from 92°). Compute = weakest **pinned** tier FEASIBLE on medium and hard motion for that sensor. Labelled POST-HOC wherever shown. |
+| **Unpinned tier dropped from sizing** | On `laptop-full` (12 threads across P-cores, their SMT siblings and E-cores) compiled runs were bimodal: whole repeats of one run differed by up to an order of magnitude in median (for example 4.1 vs 70.1 ms per scan on stairs), while pinned tiers agreed within ~2 % (worst 10 %). Its latency is not used for sizing; its accuracy is (poses do not depend on thread placement). Recommendation: pin odometry threads to one core type. |
+| **Cost model** | Fitted only on runs that kept tracking (≥ 99 % accepted) and pinned tiers; a lost track inflates frame time for reasons unrelated to point count. |
+| **Added runs (phase E, post-hoc)** | 64b-90 and 128b-90-512c with `c-gicp` on quad-hard (1 and 4 P-cores) and quad-medium (4 and 1 E-cores, 4 P-cores), to anchor the board projection and give the envelope its timing. Additions only; no run was removed for its result. |
+
+## DEC-037 — Overnight campaign: what disturbed it and what was re-measured
+
+| Field | Value |
+|-------|-------|
+| **Conditions** | 150 local runs from commit 69b5e25, clean tree, `performance` governor, AC, sleep inhibited; pre-run system load median 3.2 %. |
+| **Disturbance 1** | Another local process (an Android Gradle build) ran 17:33-17:43 and 17:44-17:51 UTC. The 5 runs that overlapped it (found from run start/end times and the build logs) were deleted and re-measured in the campaign's second pass. |
+| **Disturbance 2** | Three single-P-core runs of the second pass started under 21-59 % background load and showed 13-23 % repeat spread; they anchor the board projection, so they were deleted and re-measured on a quiet machine. |
+| **Earlier** | Phase A was measured once before the downloads finished (DEC-035) and once overnight; only the overnight runs are used. |

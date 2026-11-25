@@ -1,0 +1,338 @@
+{
+  "provenance": {
+    "dataset": "newer_college_bag9",
+    "sequence": "Newer College 2020, 01_short_experiment, bag 9 (last 27 s)",
+    "sensor": "Ouster OS1-64 Gen1 (64 beams, 1024 columns, 10 Hz)",
+    "licence": "CC BY-NC-SA 4.0",
+    "evidence": "REAL",
+    "run_id": "20261125T184918Z_newer_college_bag9_c-gicp_laptop-1e_69b5e25",
+    "commit": "69b5e25d994512a0a8553d2d2bc44251b473278f",
+    "variant": "c-gicp",
+    "parameters": {
+      "voxel_size": 0.15,
+      "min_range": 0.5,
+      "max_range": 50.0,
+      "max_correspondence_distance": 1.5,
+      "max_iterations": 30,
+      "tolerance": 0.0001
+    },
+    "hardware_label": "Measured on 13th Gen Intel(R) Core(TM) i5-13420H (laptop-1e); not a Raspberry Pi, not embedded hardware",
+    "attribution": "Data: Newer College 2020, 01_short_experiment, bag 9 (last 27 s) (CC BY-NC-SA 4.0); decimated excerpts for illustration only."
+  },
+  "layers": [
+    {
+      "id": "typical_target",
+      "role": "target",
+      "stage": "target",
+      "frame_index": 118,
+      "space": "sensor frame of scan 118",
+      "points_before_decimation": 31685,
+      "file": "clouds/typical_target.bin",
+      "note": "",
+      "n_points": 4527,
+      "origin": [
+        -14.884504318237305,
+        -29.80621337890625,
+        -3.9122555255889893
+      ],
+      "scale": 0.0009786167088022056,
+      "dtype": "uint16-le",
+      "layout": "xyz interleaved",
+      "max_quantisation_error_m": 0.0004893083544011028
+    },
+    {
+      "id": "typical_source_before",
+      "role": "source_before",
+      "stage": "source_before",
+      "frame_index": 119,
+      "space": "sensor frame of scan 119",
+      "points_before_decimation": 31735,
+      "file": "clouds/typical_source_before.bin",
+      "note": "",
+      "n_points": 4534,
+      "origin": [
+        -14.783231735229492,
+        -30.464509963989258,
+        -4.614789962768555
+      ],
+      "scale": 0.0009789803958170163,
+      "dtype": "uint16-le",
+      "layout": "xyz interleaved",
+      "max_quantisation_error_m": 0.0004894901979085081
+    },
+    {
+      "id": "typical_source_after",
+      "role": "source_after",
+      "stage": "source_after",
+      "frame_index": 119,
+      "space": "scan 119 registered into scan 118",
+      "points_before_decimation": 31735,
+      "file": "clouds/typical_source_after.bin",
+      "note": "",
+      "n_points": 4534,
+      "origin": [
+        -15.090238455404657,
+        -30.569156231574283,
+        -4.640872304281868
+      ],
+      "scale": 0.0009787932244192494,
+      "dtype": "uint16-le",
+      "layout": "xyz interleaved",
+      "max_quantisation_error_m": 0.0004893966122096247
+    },
+    {
+      "id": "stage_raw",
+      "role": "stage",
+      "stage": "raw",
+      "frame_index": 119,
+      "space": "sensor frame",
+      "points_before_decimation": 65536,
+      "file": "clouds/stage_raw.bin",
+      "note": "",
+      "n_points": 7282,
+      "origin": [
+        -14.770621299743652,
+        -30.464509963989258,
+        -4.534344673156738
+      ],
+      "scale": 0.0011012405409477864,
+      "dtype": "uint16-le",
+      "layout": "xyz interleaved",
+      "max_quantisation_error_m": 0.0005506202704738932
+    },
+    {
+      "id": "stage_range",
+      "role": "stage",
+      "stage": "range",
+      "frame_index": 119,
+      "space": "sensor frame",
+      "points_before_decimation": 56192,
+      "file": "clouds/stage_range.bin",
+      "note": "",
+      "n_points": 5620,
+      "origin": [
+        -14.753623008728027,
+        -29.85207176208496,
+        -3.5373294353485107
+      ],
+      "scale": 0.0009779835307571739,
+      "dtype": "uint16-le",
+      "layout": "xyz interleaved",
+      "max_quantisation_error_m": 0.0004889917653785869
+    },
+    {
+      "id": "stage_voxel",
+      "role": "stage",
+      "stage": "voxel",
+      "frame_index": 119,
+      "space": "sensor frame",
+      "points_before_decimation": 31735,
+      "file": "clouds/stage_voxel.bin",
+      "note": "",
+      "n_points": 5290,
+      "origin": [
+        -14.775012969970703,
+        -30.464509963989258,
+        -4.534344673156738
+      ],
+      "scale": 0.0009812148182872522,
+      "dtype": "uint16-le",
+      "layout": "xyz interleaved",
+      "max_quantisation_error_m": 0.0004906074091436261
+    },
+    {
+      "id": "worst_target",
+      "role": "target",
+      "stage": "target",
+      "frame_index": 141,
+      "space": "sensor frame of scan 141",
+      "points_before_decimation": 31235,
+      "file": "clouds/worst_target.bin",
+      "note": "",
+      "n_points": 4463,
+      "origin": [
+        -13.530582427978516,
+        -27.85188102722168,
+        -5.115974426269531
+      ],
+      "scale": 0.0008828947288889793,
+      "dtype": "uint16-le",
+      "layout": "xyz interleaved",
+      "max_quantisation_error_m": 0.00044144736444448965
+    },
+    {
+      "id": "worst_source_before",
+      "role": "source_before",
+      "stage": "source_before",
+      "frame_index": 142,
+      "space": "sensor frame of scan 142",
+      "points_before_decimation": 31172,
+      "file": "clouds/worst_source_before.bin",
+      "note": "",
+      "n_points": 4454,
+      "origin": [
+        -13.583114624023438,
+        -27.965923309326172,
+        -5.0418572425842285
+      ],
+      "scale": 0.0008964456791207256,
+      "dtype": "uint16-le",
+      "layout": "xyz interleaved",
+      "max_quantisation_error_m": 0.0004482228395603628
+    },
+    {
+      "id": "worst_source_after",
+      "role": "source_after",
+      "stage": "source_after",
+      "frame_index": 142,
+      "space": "scan 142 registered into scan 141",
+      "points_before_decimation": 31172,
+      "file": "clouds/worst_source_after.bin",
+      "note": "",
+      "n_points": 4454,
+      "origin": [
+        -13.386053051880939,
+        -27.89361412062615,
+        -5.053598327278033
+      ],
+      "scale": 0.0009016085794637346,
+      "dtype": "uint16-le",
+      "layout": "xyz interleaved",
+      "max_quantisation_error_m": 0.0004508042897318673
+    }
+  ],
+  "pairs": {
+    "typical": {
+      "frame_index": 119,
+      "total_ms": 119.1909,
+      "icp_iterations": 29,
+      "inlier_ratio": 0.9991492043485111,
+      "residual_m": 0.12732962552026725,
+      "accepted": true,
+      "reject_reason": "",
+      "residual_history_m": [
+        0.2482168100215725,
+        0.19318161831971875,
+        0.16630259317631105,
+        0.15178119044277763,
+        0.13731213471818565,
+        0.1262164089860391,
+        0.12043715799587622,
+        0.12065802741462618,
+        0.12143398083107806,
+        0.12210588569141556,
+        0.12258830560131355,
+        0.1229910931381206,
+        0.12332951624136163,
+        0.12362051204330866,
+        0.12390642589127619,
+        0.12420359865264428,
+        0.12448812573338335,
+        0.12477786657525623,
+        0.12507637505933297,
+        0.12537402145319793,
+        0.1257742638166629,
+        0.1260906682887235,
+        0.12637896439612942,
+        0.12662231945043217,
+        0.1268241742677869,
+        0.1269826111076334,
+        0.12711956015916737,
+        0.1272393168136805,
+        0.12732962552026725
+      ],
+      "transform_target_from_source": [
+        [
+          0.9997594951911902,
+          0.02188985770470464,
+          0.0013363774632702606,
+          -0.1427360642829488
+        ],
+        [
+          -0.02188950648876952,
+          0.9997603577082574,
+          -0.00027687674550012995,
+          -0.09349194353780402
+        ],
+        [
+          -0.001342118003272918,
+          0.0002475575121577658,
+          0.9999990687168379,
+          -0.005277433357231518
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      ]
+    },
+    "worst": {
+      "frame_index": 142,
+      "total_ms": 157.5007,
+      "icp_iterations": 17,
+      "inlier_ratio": 0.9975939946105479,
+      "residual_m": 0.17907099838269463,
+      "accepted": true,
+      "reject_reason": "",
+      "residual_history_m": [
+        0.2289039299588731,
+        0.21471139425958852,
+        0.20316808403906186,
+        0.19690052966541735,
+        0.19047533406511002,
+        0.18717487836702462,
+        0.18540042142020924,
+        0.18417871814210746,
+        0.18272556504318735,
+        0.18143375286850238,
+        0.18054487453187668,
+        0.18005242573390398,
+        0.17967304985785817,
+        0.17941976330369508,
+        0.1792590133341013,
+        0.1791359482125631,
+        0.17907099838269463
+      ],
+      "transform_target_from_source": [
+        [
+          0.9999163434716825,
+          -0.012934628172745523,
+          -3.810844394903234e-05,
+          0.12270248068866607
+        ],
+        [
+          0.012934499216186604,
+          0.9999134565382253,
+          -0.0024037811475577887,
+          -0.02538580832303694
+        ],
+        [
+          6.919716126516045e-05,
+          0.002403087141933668,
+          0.9999971101877936,
+          0.02503374868762854
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      ]
+    }
+  },
+  "window": {
+    "start": 0,
+    "stop": 270,
+    "n_frames": 270,
+    "of_total": 271
+  },
+  "colour_roles": [
+    "source_before",
+    "source_after",
+    "target",
+    "stage"
+  ]
+}

@@ -6,47 +6,48 @@ const S: any = readJson('sizing.json', null);
 const rows: any[] = S?.rows ?? [];
 const W = ['ncd21_quad_easy', 'ncd21_quad_medium', 'ncd21_quad_hard', 'ncd21_stairs'];
 const WL: Record<string, string> = { ncd21_quad_easy: 'easy', ncd21_quad_medium: 'medium', ncd21_quad_hard: 'hard', ncd21_stairs: 'stairs' };
-const TIERS = ['laptop-full', 'laptop-4e', 'laptop-1e'];
-const TL: Record<string, string> = { 'laptop-full': 'laptop, 12 threads', 'laptop-4e': '4 E-cores (N100-class proxy)', 'laptop-1e': '1 E-core' };
-const SENS10 = ['native', '128b-90-512c', '64b-90', '32b-90', '16b-90', '64b-45', '32b-45', '16b-30', 'mid360-budget'];
+const TIERS = ['laptop-4e', 'laptop-1e'];
+const TL: Record<string, string> = { 'laptop-4c': '4 P-cores', 'laptop-1c': '1 P-core', 'laptop-4e': '4 E-cores (N100-class proxy)', 'laptop-1e': '1 E-core', 'laptop-full': 'laptop, 12 threads (unpinned)' };
+const SENS10 = ['native', '128b-90-512c', '64b-90', '64b-45', 'mid360-budget', '32b-90', '32b-45', '16b-90', '16b-30'];
 const SENS5 = ['native@5hz', '64b-45@5hz', '32b-45@5hz', '16b-30@5hz', 'mid360-budget@5hz'];
 const find = (q: any) => rows.find((r) => Object.entries(q).every(([k, v]) => (k === 'sensor' ? r.sensor.id : r[k]) === v));
 const cls = (c?: string) => (c === 'FEASIBLE' || c === 'ADEQUATE' ? 'pass' : c === 'MARGINAL' ? 'warn' : c === 'INFEASIBLE' || c === 'INADEQUATE' ? 'fail' : 'info');
-const rec10 = S?.recommendation?.at_10hz;
-const rec5 = S?.recommendation?.at_5hz;
-const proj = (S?.projection ?? []).find((p: any) => p.sensor === rec10?.sensor?.sensor) ?? (S?.projection ?? [])[0];
-const labelOf = (id: string) => rows.find((r) => r.sensor.id === id)?.sensor.label ?? id;
-const H = S?.headline ?? {};
+const P = S?.posthoc?.at_10hz;
+const pick = P?.sensor;
+const alts: any[] = P?.same_cost_alternatives ?? [];
+const proj = (S?.projection ?? []).find((p: any) => p.sensor === pick?.sensor && p.dataset === 'ncd21_quad_hard');
+const lost = (r: any) => r && (r.accepted_pct ?? 0) < 90;
 ---
 <Layout title="Sizing" description="Which LiDAR and which onboard computer: measured on real recordings, emulated sensors and several compute tiers.">
   <section class="wrap section">
     <p class="caption">B · Sensor and compute sizing</p>
-    <h1 style="max-width:22ch">Which LiDAR, and which computer to fly it with?</h1>
-    <p style="font-size:18px;margin-top:16px;max-width:72ch">One real 128-beam recording is reshaped into cheaper sensors (fewer beams, narrower field of view, fewer points, lower rate), run through compiled odometry at four motion levels, and timed on several compute tiers. Declared rules (decision log DEC-027, DEC-028, DEC-031) turn the measurements into a choice; this page does not pick by eye.</p>
-    {!S || !rows.length ? <p class="notice">The sizing campaign has not been exported yet. Run <code>python tools/run_matrix.py</code> then <code>python tools/sizing_analysis.py</code>.</p> : (
-    <div class="grid cols-3" style="margin-top:24px">
-      <div class="card stat"><div class="caption">Recommended sensor class (10 Hz)</div>
-        <div class="value" style="font-size:26px">{rec10?.sensor ? rec10.sensor.label : 'none passed'}</div>
-        {rec10?.sensor && <p class="muted"><Num file="sizing.json" path="recommendation.at_10hz.sensor.points_per_s" digits={0} /> points per second; ADEQUATE on all four motion windows. <span class="evidence">EMULATED</span></p>}</div>
-      <div class="card stat"><div class="caption">Weakest measured computer that keeps up</div>
-        <div class="value" style="font-size:26px">{rec10?.weakest_feasible_measured_tier ? TL[rec10.weakest_feasible_measured_tier.profile] : 'none measured'}</div>
-        {rec10?.weakest_feasible_measured_tier && <p class="muted">P99 uses <Num file="sizing.json" path="recommendation.at_10hz.weakest_feasible_measured_tier.share_pct" digits={0} /> % of the 100 ms frame on the hardest motion; rule: at most 50 %. <span class="evidence">MEASURED</span></p>}</div>
-      <div class="card stat"><div class="caption">Python vs compiled, same algorithm</div>
-        <div class="value">{H.python_over_compiled_same_algorithm ? <><Num file="sizing.json" path="headline.python_over_compiled_same_algorithm" digits={1} />×</> : 'UNAVAILABLE'}</div>
-        <p class="muted">Median frame time of the Python baseline over the compiled point-to-point ICP on the same scans (bag 9, same laptop). Language, not the algorithm, decided v1's verdict. <span class="evidence">MEASURED</span></p></div>
-    </div>)}
+    <h1 style="max-width:22ch">Which LiDAR, and which computer to run it on?</h1>
+    <p style="font-size:18px;margin-top:16px;max-width:74ch">One real 128-beam recording is reshaped into cheaper sensors (fewer beams, narrower field of view, fewer points, lower rate), run through compiled odometry at four motion levels, and timed on pinned compute tiers. Rules written before the results (DEC-027, DEC-028, DEC-031) turn the measurements into classes; where they could not give an answer, a clearly labelled post-hoc analysis (DEC-036) does.</p>
+    {!S || !rows.length ? <p class="notice">The sizing campaign has not been exported yet.</p> : (<>
+    <div class="notice" style="margin-top:20px;max-width:90ch"><strong>Result of the rule declared in advance:</strong> no emulated sensor is ADEQUATE on all four motion windows. Every sensor fails the hardest one (quad-hard: up to 34° of rotation between scans); even the full 128-beam scan drifts <Num file="sizing.json" path="headline.hard_native_rpe10_pct" digits={1} /> % over 10 m there. That is a limit of LiDAR-only scan-to-scan odometry, which an IMU-aided method addresses; more beams or a faster computer do not.</div>
+    <div class="grid cols-3" style="margin-top:20px">
+      <div class="card stat"><div class="caption">Sensor class for walking-pace motion <span class="evidence">POST-HOC · EMULATED</span></div>
+        <div class="value" style="font-size:26px"><Num file="sizing.json" path="headline.posthoc_points_per_s_k" digits={0} /> k points/s at 10 Hz</div>
+        <p class="muted">{pick?.label}{alts.length ? ', or equally ' + alts.map((a: any) => a.label).join(', or ') : ''}. ADEQUATE on easy and medium motion; sensors with 32 beams or fewer lose track already at medium motion.</p></div>
+      <div class="card stat"><div class="caption">Compute for that sensor <span class="evidence">MEASURED</span></div>
+        <div class="value" style="font-size:26px">{P?.weakest_feasible_pinned_tier ? TL[P.weakest_feasible_pinned_tier] : 'none of the pinned tiers'}</div>
+        <p class="muted">Weakest pinned tier that is FEASIBLE on medium and hard motion. Four laptop efficiency cores (the N100's core design) keep P99 at <Num file="sizing.json" path="headline.posthoc_hard_4e_p99_ms" digits={0} /> ms on the hardest motion; one core needs <Num file="sizing.json" path="headline.posthoc_hard_1e_p99_ms" digits={0} /> ms, beyond the 100 ms period. Pin the threads (section 5).</p></div>
+      <div class="card stat"><div class="caption">Python vs compiled, same algorithm <span class="evidence">MEASURED</span></div>
+        <div class="value"><Num file="sizing.json" path="headline.python_over_compiled_same_algorithm" digits={1} />×</div>
+        <p class="muted">Median frame time of the Python ICP over the identical compiled ICP on the same scans. The language, not the algorithm, decided the first study's verdict.</p></div>
+    </div></>)}
   </section>
 
   {rows.length > 0 && (<>
   <section class="wrap section">
     <h2>1 · From Python to compiled code</h2>
-    <p class="muted">Newer College 2020, bag 9 (Ouster OS1-64, 271 scans, walking). Same laptop, Ubuntu, performance governor. Bars: median and P99 frame time; dashed line: the 100 ms frame period.</p>
+    <p class="muted">Newer College 2020, bag 9 (Ouster OS1-64, 271 scans, walking). Same laptop, Ubuntu, performance governor. Bars: median and P99 frame time; dashed line: the 100 ms frame period. GICP is also the most accurate: <Num file="sizing.json" path="headline.bag9_c_gicp_ate_m" digits={2} /> m position error against <Num file="sizing.json" path="headline.bag9_baseline_ate_m" digits={2} /> m for point-to-point ICP.</p>
     <div class="card"><div id="c-ladder" style="height:340px"></div></div>
   </section>
 
   <section class="wrap section">
     <h2>2 · Sensor × motion × compute (10 Hz)</h2>
-    <p class="muted">Accuracy columns: compiled GICP on a full laptop, one 30 s window each; cell shows RPE over 10 m (% of distance) and the class. Compute columns: P99 frame time as a share of the 100 ms period on the hardest motion (quad-hard). FEASIBLE = P99 ≤ 50 % and no frame late; MARGINAL = P99 ≤ 100 %.</p>
+    <p class="muted">Accuracy columns: compiled GICP, one 30 s window each; the cell shows drift over 10 m (% of distance) and the class; <strong>lost</strong> = under 90 % of registrations accepted. Compute columns: P99 frame time on the hardest motion as a share of the 100 ms period, on pinned efficiency cores. Rows are ordered by points per second.</p>
     <div class="card table-scroll"><table>
       <thead><tr><th>Emulated sensor (from OS0-128)</th><th>points / s</th>{W.map((w) => <th>{WL[w]}<br /><span class="muted">RPE 10 m</span></th>)}{TIERS.map((t) => <th>{TL[t]}<br /><span class="muted">P99 / period</span></th>)}</tr></thead>
       <tbody>{SENS10.map((sid) => {
@@ -56,62 +57,79 @@ const H = S?.headline ?? {};
           <td><strong>{any.sensor.label}</strong><br /><span class="muted mono">{sid}</span></td>
           <td>{fmt(any.points_per_s / 1000, 0)} k</td>
           {W.map((w) => { const r = find({ sensor: sid, dataset: w, variant: 'c-gicp', profile: 'laptop-full', phase: 'C' });
-            return <td>{r ? <><span>{fmt(r.rpe10_pct, 2)} %</span><br /><span class={'status ' + cls(r.accuracy_class)}>{r.accuracy_class}</span></> : '—'}</td>; })}
+            return <td>{r ? <><span>{lost(r) ? 'lost' : fmt(r.rpe10_pct, 2) + ' %'}</span><br /><span class={'status ' + cls(r.accuracy_class)}>{r.accuracy_class}</span></> : '—'}</td>; })}
           {TIERS.map((t) => { const r = find({ sensor: sid, dataset: 'ncd21_quad_hard', variant: 'c-gicp', profile: t, voxel_m: 0.15 });
-            return <td>{r ? <><span>{fmt(r.p99_share_of_period_pct, 0)} % ({fmt(r.latency_ms.p99, 0)} ms)</span><br /><span class={'status ' + cls(r.realtime_class)}>{r.realtime_class}</span></> : '—'}</td>; })}
+            return <td>{!r ? '—' : lost(r) ? <span class="muted">lost track</span> : <><span>{fmt(r.p99_share_of_period_pct, 0)} %</span><br /><span class={'status ' + cls(r.realtime_class)}>{r.realtime_class}</span></>}</td>; })}
         </tr>; })}</tbody>
     </table></div>
-    <p class="muted" style="margin-top:8px">Emulation keeps the real scene, motion and timing but not the target sensor's optics, noise, exact beam angles, range or (Livox) scan pattern. Point budget row: Livox Mid-360-like field of view and points per scan only.</p>
+    <p class="muted" style="margin-top:8px">Emulation keeps the real scene, motion and timing but not the target sensor's optics, noise, exact beam angles, range or (Livox) scan pattern. A sensor that lost track spends its time failing to converge, so its frame time is not a cost of the sensor. Stairs has only 12.4 m of path, so its 10 m drift rests on few segments (its position error stays 0.07-0.5 m).</p>
   </section>
 
   <section class="wrap section">
     <h2>3 · What a scan costs</h2>
-    <p class="muted">Each dot is one run (compiled GICP, 10 Hz sensors, all four windows). x: points left after the 0.15 m voxel filter; y: P99 frame time. Lines: least-squares cost model on every measured frame. Fewer beams cost less only until the voxel filter has nothing left to remove.</p>
+    <p class="muted">Each dot is one run of compiled GICP that kept tracking, on pinned efficiency cores. x: points left after the 0.15 m voxel filter; y: median frame time. Lines: least-squares cost model on every measured frame of those runs. Beams cost time only through the points that survive the voxel filter.</p>
     <div class="card"><div id="c-cost" style="height:380px"></div></div>
     <div class="card table-scroll" style="margin-top:16px"><table>
-      <thead><tr><th>Variant</th><th>Tier</th><th>fixed cost a (ms)</th><th>per 1000 points b (ms)</th><th>R²</th><th>frames</th></tr></thead>
-      <tbody>{(S.cost_model ?? []).map((c: any) => <tr><td>{c.variant}</td><td>{c.profile}</td><td>{fmt(c.a_ms, 1)}</td><td>{fmt(c.b_ms_per_kpt, 2)}</td><td>{fmt(c.r2, 2)}</td><td>{c.frames}</td></tr>)}</tbody>
+      <thead><tr><th>Variant</th><th>Tier</th><th>ms per 1000 points after voxel</th><th>R²</th><th>frames</th></tr></thead>
+      <tbody>{(S.cost_model ?? []).filter((c: any) => c.variant.startsWith('c-')).map((c: any) => <tr><td>{c.variant}</td><td>{TL[c.profile] ?? c.profile}</td><td>{fmt(c.b_ms_per_kpt, 2)}</td><td>{fmt(c.r2, 2)}</td><td>{c.frames}</td></tr>)}</tbody>
     </table></div>
+    <p class="muted" style="margin-top:8px">The slope is the useful number: how much one more thousand surviving points costs per scan. The fitted intercept is not shown because it is an extrapolation far below the measured range (about 6-45 thousand points). Point-to-point ICP fits poorly (R² ≈ 0.4): its cost is driven by the iteration count, which depends on the motion; GICP converges in a few iterations and its cost is close to linear in points.</p>
   </section>
 
   <section class="wrap section">
     <h2>4 · Boards that were not measured <span class="evidence">ASSUMED</span></h2>
-    <p class="muted">Projection for {proj ? labelOf(proj.sensor) : 'the recommended sensor'} on quad-hard: the measured single performance-core P99 scaled by published Geekbench 6 single-core scores (one thread, the pessimistic case for a compiled pipeline that also uses more cores). Error bars: the spread of published scores. Section 5 shows how well that scaling predicts this workload on pairs that were measured.</p>
-    <div class="card"><div id="c-boards" style="height:380px"></div></div>
+    <p class="muted">Projection for {pick ? pick.label : 'the selected sensor'} on the hardest motion. Four-core boards: the measured P99 on four laptop efficiency cores scaled by published Geekbench 6 single-core scores (the efficiency core is the N100's core). One thread: the measured single performance-core P99, scaled the same way. Error bars: spread of published scores. Section 6 shows how well this scaling predicts the workload on pairs that were measured.</p>
+    <div class="card"><div id="c-boards" style="height:400px"></div></div>
     {proj && <div class="card table-scroll" style="margin-top:16px"><table>
-      <thead><tr><th>Board</th><th>GB6 single-core</th><th>projected P99, 1 thread</th><th>share of 100 ms</th><th>class (projection)</th><th>source</th></tr></thead>
-      <tbody>{proj.boards.map((b: any) => <tr><td>{b.board}</td><td>{b.gb6_single}</td><td>{fmt(b.p99_single_thread_ms, 0)} ms</td><td>{fmt(b.share_of_period_pct, 0)} %</td><td><span class={'status ' + cls(b.class_single_thread)}>{b.class_single_thread}</span></td><td>{b.sources.map((u: string, i: number) => <a href={u} rel="noopener">[{i + 1}]</a>)}</td></tr>)}</tbody>
+      <thead><tr><th>Board</th><th>GB6 single-core</th><th>projected P99, 4 cores</th><th>class</th><th>projected P99, 1 thread</th><th>source</th></tr></thead>
+      <tbody>{proj.boards.map((b: any) => <tr><td>{b.board}</td><td>{b.gb6_single}</td>
+        <td>{b.p99_4c_ms != null ? fmt(b.p99_4c_ms, 0) + ' ms' : '—'}</td>
+        <td>{b.class_4c ? <span class={'status ' + cls(b.class_4c)}>{b.class_4c}</span> : '—'}</td>
+        <td>{b.p99_1t_ms != null ? fmt(b.p99_1t_ms, 0) + ' ms' : '—'}</td>
+        <td>{b.sources.map((u: string, i: number) => <a href={u} rel="noopener">[{i + 1}]</a>)}</td></tr>)}</tbody>
     </table></div>}
   </section>
 
   <section class="wrap section">
-    <h2>5 · Does a single-core benchmark predict this workload?</h2>
+    <h2>5 · Two engineering findings</h2>
+    <div class="grid cols-2">
+      <div class="card"><h3>Pin the threads on a hybrid CPU</h3>
+        <p>Given all 12 hardware threads of this laptop (4 performance cores with two threads each, plus 4 efficiency cores), the compiled pipeline is <strong>bimodal</strong>: whole repeats of the same run jumped between about 4 ms and 70 ms median per scan. Pinned to cores of one kind, repeats typically agree within 2 %. A parallel step waits for its slowest thread; one thread on a slow or shared core stalls every scan.</p>
+        <p class="muted">Repeat medians: unpinned up to <Num file="sizing.json" path="headline.unpinned_max_spread_x" digits={0} />× apart; pinned efficiency cores never more than <Num file="sizing.json" path="headline.pinned_e_max_spread_pct" digits={1} /> % apart. Unpinned timings are therefore not used for sizing. <span class="evidence">MEASURED</span></p></div>
+      <div class="card"><h3>Coarser voxels do not buy speed safely</h3>
+        <p>On the hardest motion, raising the voxel size from 0.15 m to 0.4 m cut the points to a third but tracking collapsed (accepted registrations from 100 % to 6 %); 0.25 m still tracked with more drift. On the walking sequence the Python pipeline lost track at 0.4 m too. The voxel size is an accuracy parameter first; compute should be sized for 0.15-0.25 m.</p>
+        <p class="muted"><span class="evidence">MEASURED</span> Phase D of the campaign; full numbers in <code>artifacts/sizing/sizing.json</code>.</p></div>
+    </div>
+  </section>
+
+  <section class="wrap section">
+    <h2>6 · Does a single-core benchmark predict this workload?</h2>
     <div class="card table-scroll"><table>
       <thead><tr><th>Comparison (same scans, same code)</th><th>measured</th><th>predicted from GB6</th></tr></thead>
       <tbody>{(S.scaling ?? []).map((c: any) => <tr><td>{c.what}{c.arm_cpu && <><br /><span class="muted mono">{c.arm_cpu}{c.x86_cpu ? ' vs ' + c.x86_cpu : ''}</span></>}</td>
-        <td>{c.measured_ratio_p50 ? fmt(c.measured_ratio_p50, 2) + '× slower' : c.measured_speedup_p50 ? fmt(c.measured_speedup_p50, 2) + '× faster' : '—'}</td>
+        <td>{c.measured_ratio_p50 ? fmt(c.measured_ratio_p50, 2) + '× the time' : c.measured_speedup_p50 ? fmt(c.measured_speedup_p50, 2) + '× faster' : '—'}</td>
         <td>{c.predicted_ratio ? fmt(c.predicted_ratio, 2) + '×' : '—'}</td></tr>)}</tbody>
     </table></div>
+    <p class="muted" style="margin-top:8px">For GICP the single-core score overstates the gap between the laptop's performance and efficiency cores (measured about 1.6×, predicted 1.9×), so board projections from the performance core are pessimistic and those from the efficiency cores are the closer estimate. Four cores give about 3× one core.</p>
   </section>
 
   <section class="wrap section">
-    <h2>6 · Accuracy against points per second</h2>
-    <p class="muted">RPE over 10 m for every emulated sensor at 10 Hz and 5 Hz, by motion level. The dashed line is the 2 % accuracy rule.</p>
+    <h2>7 · Accuracy against points per second</h2>
+    <p class="muted">Drift over 10 m for every emulated sensor at 10 Hz and 5 Hz, by motion level (lost runs are not drawn). The dashed line is the 2 % accuracy rule.</p>
     <div class="card"><div id="c-acc" style="height:380px"></div></div>
     <h3 style="margin-top:24px">Halving the frame rate (5 Hz)</h3>
     <div class="card table-scroll"><table>
-      <thead><tr><th>Sensor</th>{W.map((w) => <th>{WL[w]}</th>)}<th>P99 / 200 ms (hard, laptop)</th></tr></thead>
+      <thead><tr><th>Sensor</th>{W.map((w) => <th>{WL[w]}</th>)}</tr></thead>
       <tbody>{SENS5.map((sid) => { const h = find({ sensor: sid, dataset: 'ncd21_quad_hard', variant: 'c-gicp', profile: 'laptop-full', phase: 'C' }); if (!h) return null;
         return <tr><td>{h.sensor.label}</td>{W.map((w) => { const r = find({ sensor: sid, dataset: w, variant: 'c-gicp', profile: 'laptop-full', phase: 'C' });
-          return <td>{r ? <><span>{fmt(r.rpe10_pct, 2)} %</span> <span class={'status ' + cls(r.accuracy_class)}>{r.accuracy_class}</span></> : '—'}</td>; })}
-          <td>{fmt(h.p99_share_of_period_pct, 0)} %</td></tr>; })}</tbody>
+          return <td>{r ? <><span>{lost(r) ? 'lost' : fmt(r.rpe10_pct, 2) + ' %'}</span> <span class={'status ' + cls(r.accuracy_class)}>{r.accuracy_class}</span></> : '—'}</td>; })}</tr>; })}</tbody>
     </table></div>
-    {rec5 && <p class="muted" style="margin-top:8px">At 5 Hz the rule picks: <strong>{rec5.sensor ? rec5.sensor.label : 'no sensor passes on all four windows'}</strong>.</p>}
+    <p class="muted" style="margin-top:8px">At 5 Hz a scan has twice the time budget but twice the motion between scans; the full sensor still tracks easy and medium motion, and loses the hardest window.</p>
   </section>
 
   <section class="wrap section">
-    <h2>7 · LiDAR data rate (link sizing)</h2>
-    <p class="muted">Bytes per second of the decoded point-cloud message actually recorded in each window: what the driver hands to the odometry process (all point fields, including padding). The sensor's own packet stream on the wire is smaller; the driver's decoded cloud is what memory and inter-process transport must carry. Last column: how much of each bag the selective fetch had to download.</p>
+    <h2>8 · LiDAR data rate</h2>
+    <p class="muted">Bytes per second of the decoded point-cloud message recorded in each window: what the driver hands to the odometry process (all point fields). Last column: how much of each bag the selective fetch downloaded.</p>
     <div class="card table-scroll"><table>
       <thead><tr><th>Window</th><th>scans</th><th>scans / s</th><th>MB per scan</th><th>point cloud (Mbit/s)</th><th>bag downloaded</th></tr></thead>
       <tbody>{(S.data_rate ?? []).map((d: any) => <tr><td class="mono">{d.window}</td><td>{d.scans}</td><td>{fmt(d.scans_per_s, 1)}</td><td>{fmt(d.mbytes_per_scan, 2)}</td><td>{fmt(d.pointcloud2_mbit_s, 0)}</td><td>{fmt(d.bag_fraction_downloaded_pct, 0)} %</td></tr>)}</tbody>
@@ -124,8 +142,9 @@ const H = S?.headline ?? {};
     <ul style="padding-left:18px;max-width:80ch">
       <li>Handheld recordings: the platform's own vibration and mounting are not represented, and the hardest window (145 °/s at the 95th percentile) stands in for fast-turning motion.</li>
       <li>Scan-to-scan odometry without IMU or map. A full stack (for example LiDAR-inertial odometry with a local map) is more robust and does more work per scan; the cost model is the starting point for sizing it, not its result.</li>
-      <li>Boards other than this laptop and the cloud VMs are projections (<span class="evidence">ASSUMED</span>). Buy one candidate board and run <code>autonav run --profile pi5</code> (or any profile) on it before committing to a fleet.</li>
-      <li>Rules and thresholds are declared in the <a href="https://github.com/JeyaVardhan-L/lidar-compute-sizing/blob/master/docs/decision-log.md">decision log</a>; the tables show raw numbers so other thresholds can be applied.</li>
+      <li>The sensor choice for walking-pace motion comes from a post-hoc analysis (DEC-036), after the declared rule found no sensor that handles the hardest motion.</li>
+      <li>Boards other than this laptop and the cloud VMs are projections (<span class="evidence">ASSUMED</span>). Measure one candidate board with <code>autonav run --profile pi5</code> (or any profile) before committing.</li>
+      <li>Rules and thresholds are in the <a href="https://github.com/JeyaVardhan-L/lidar-compute-sizing/blob/master/docs/decision-log.md">decision log</a>; the tables show raw numbers so other thresholds can be applied.</li>
     </ul>
   </section>
 

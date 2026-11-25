@@ -1,0 +1,123 @@
+{
+  "run_id": "20261125T053013Z_oxford_spires_baseline_x86-cloud_49637f3",
+  "label": "v2-cloud-x86-cloud-baseline",
+  "status": "completed",
+  "command": "autonav run --dataset oxford_spires --variant baseline --profile x86-cloud --repeats 3 --label v2-cloud-x86-cloud-baseline",
+  "started_utc": "2026-11-25T05:30:13.751221+00:00",
+  "ended_utc": "2026-11-25T05:32:13.406674+00:00",
+  "git": {
+    "commit": "49637f3ea06e42ba75082977d5544c366345b005",
+    "branch": "v2-sizing",
+    "dirty": false
+  },
+  "mode": "pipeline",
+  "variant": "baseline",
+  "dataset": {
+    "id": "oxford_spires",
+    "sensor": "Hesai QT64 (64 beams) - DIFFERENT from OS1-64 (beam layout, FOV, range)",
+    "sequence": "Oxford Spires, one window",
+    "licence": "see docs/decision-log.md",
+    "evidence": "REAL",
+    "consecutive": true,
+    "nominal_hz": 10.0,
+    "same_sensor_as_target": false
+  },
+  "window": {
+    "start": 0,
+    "stop": 300,
+    "n_frames": 300,
+    "of_total": 300
+  },
+  "sensor_model": {
+    "id": "native",
+    "label": "as recorded",
+    "frame_stride": 1,
+    "evidence": "REAL",
+    "derived_from": "Hesai QT64 (64 beams) - DIFFERENT from OS1-64 (beam layout, FOV, range)"
+  },
+  "parameters": {
+    "voxel_size": 0.15,
+    "min_range": 0.5,
+    "max_range": 50.0,
+    "max_correspondence_distance": 1.5,
+    "max_iterations": 30,
+    "tolerance": 0.0001
+  },
+  "registration_gate": {
+    "min_inlier_ratio": 0.3,
+    "max_mean_residual_m": 0.25,
+    "max_step_translation_m": 1.0,
+    "max_step_rotation_deg": 20.0
+  },
+  "profile": {
+    "id": "x86-cloud",
+    "claim": "Shared x86 cloud VM (GitHub Actions ubuntu-latest). Noisy. Reference for the ARM VM on the same workload.",
+    "threads": null
+  },
+  "methodology": {
+    "repeats": 3,
+    "warmup_frames_excluded": 3,
+    "initial_frame_excluded": true,
+    "deadline_ms": 100.0,
+    "percentile_method": "linear interpolation",
+    "timing": "time.perf_counter wall clock; total_ms = preprocess + register (frame in memory); e2e_ms adds file load",
+    "gc": "default (not disabled)"
+  },
+  "environment": {
+    "cpu_model": "Intel(R) Xeon(R) 6975P-C",
+    "cpu_architecture": "x86_64",
+    "cpu_cores_physical": 2,
+    "cpu_cores_logical": 4,
+    "cpu_clock_mhz": {
+      "current": 3800.59825,
+      "min": 0.0,
+      "max": 0.0,
+      "note": "reported by the OS; sustained clock under load is not measured"
+    },
+    "ram_total_gb": 15.33,
+    "os": "Linux 7.0.0-1014-aws (#14~24.04.1-Ubuntu SMP PREEMPT Fri Sep 18 21:24:59 UTC 2026)",
+    "python": "3.12.16",
+    "numpy": "2.5.5",
+    "scipy": "1.18.1",
+    "psutil": "7.2.2",
+    "blas_lapack": {
+      "blas": {
+        "name": "scipy-openblas",
+        "version": "0.3.34.237.2",
+        "openblas configuration": "OpenBLAS 0.3.34.237.2  USE64BITINT DYNAMIC_ARCH NO_AFFINITY SkylakeX MAX_THREADS=64"
+      },
+      "lapack": {
+        "name": "scipy-openblas",
+        "version": "0.3.34.237.2",
+        "openblas configuration": "OpenBLAS 0.3.34.237.2  USE64BITINT DYNAMIC_ARCH NO_AFFINITY SkylakeX MAX_THREADS=64"
+      }
+    },
+    "thread_env": {
+      "OMP_NUM_THREADS": null,
+      "OPENBLAS_NUM_THREADS": null,
+      "MKL_NUM_THREADS": null
+    },
+    "cpu_affinity_effective": [
+      0,
+      1,
+      2,
+      3
+    ],
+    "gpu": "not used (CPU-only pipeline)",
+    "conditions_before_run": {
+      "system_cpu_percent_1s": 1.0,
+      "ram_available_gb": 14.37,
+      "power_plan": "governor=? epp=? ac=?",
+      "note": "The machine is a shared development laptop, not an isolated benchmark host; other applications may be running."
+    },
+    "cpu_affinity_requested": null
+  },
+  "hardware_label": "Measured on Intel(R) Xeon(R) 6975P-C (x86-cloud); not a Raspberry Pi, not embedded hardware",
+  "evidence_tags": {
+    "latency": "MEASURED",
+    "violation_percent": "DERIVED",
+    "peak_rss": "MEASURED",
+    "ate_rpe": "DERIVED (ground truth)",
+    "dataset": "DECLARED"
+  }
+}

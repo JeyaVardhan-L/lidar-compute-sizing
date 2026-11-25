@@ -2,6 +2,9 @@
   "laptop-full": "Development-laptop performance (no limits).",
   "laptop-4c": "Scaling with core count on the development laptop. One-way inference only: a miss here makes a miss on a Raspberry Pi 5 very likely; a pass says nothing about the Pi.",
   "laptop-1c": "Single-core scaling on the development laptop. One-way inference only (see laptop-4c).",
+  "laptop-4e": "Four efficiency cores (Gracemont, 3.4 GHz) of the development laptop: a proxy for Intel N100-class compute, not an N100.",
+  "laptop-1e": "One efficiency core (Gracemont, 3.4 GHz) of the development laptop: slow-core proxy, not embedded hardware.",
+  "x86-cloud": "Shared x86 cloud VM (GitHub Actions ubuntu-latest). Noisy. Reference for the ARM VM on the same workload.",
   "arm-cloud": "Real ARM server-class shared cloud VM (GitHub Actions). Noisy. NOT a Raspberry Pi.",
   "pi5": "Raspberry Pi 5 measurement. Valid only when this profile is run on a real Pi 5; the CPU model recorded in run.json must say so."
 }

@@ -50,7 +50,7 @@
     "unit": "MB",
     "evidence": "MEASURED",
     "definition": "Peak resident (working-set) memory of the worker process.",
-    "calculation": "psutil peak_wset (Windows) or ru_maxrss.",
+    "calculation": "psutil peak_wset on Windows; ru_maxrss on Linux.",
     "interpretation": "Process peak; machine RAM is a separate specification, not a measurement."
   },
   {
@@ -103,8 +103,8 @@
     "name": "Registration residual",
     "unit": "m",
     "evidence": "MEASURED",
-    "definition": "Mean distance of inlier correspondences at the start of the last iteration.",
-    "calculation": "Point-to-point distance for all variants.",
+    "definition": "Mean distance of inlier correspondences (within 1.5 m): at the start of the last iteration for the Python variants, after alignment for the compiled ones.",
+    "calculation": "Point-to-point nearest-neighbour distance for all variants (DEC-032).",
     "interpretation": "Included in the validity gate."
   }
 ]

@@ -1,0 +1,144 @@
+{
+  "run_id": "20261125T220826Z_ncd21_quad_medium_64b-90_c-gicp_laptop-1e_69b5e25",
+  "label": "v2-E-ncd21_quad_medium-64b-90-c-gicp-laptop-1e-vox0.15",
+  "status": "completed",
+  "command": "autonav run --repeats 3 --variant c-gicp --dataset ncd21_quad_medium --sensor 64b-90 --profile laptop-1e --label v2-E-ncd21_quad_medium-64b-90-c-gicp-laptop-1e-vox0.15",
+  "started_utc": "2026-11-25T22:08:26.714121+00:00",
+  "ended_utc": "2026-11-25T22:09:44.116357+00:00",
+  "git": {
+    "commit": "69b5e25d994512a0a8553d2d2bc44251b473278f",
+    "branch": "v2-sizing",
+    "dirty": true,
+    "dirty_code": false,
+    "changed_files": [
+      "EADME.md",
+      "artifacts/sizing/sizing.json",
+      "docs/decision-log.md",
+      "site/public/data/sizing.json",
+      "site/src/pages/datasets/index.astro",
+      "site/src/pages/hardware/index.astro",
+      "site/src/pages/index.astro",
+      "site/src/pages/metrics/index.astro",
+      "site/src/pages/reproduce/index.astro",
+      "site/src/pages/sizing/index.astro",
+      "site/src/scripts/sizing.ts",
+      "tools/sizing_analysis.py"
+    ]
+  },
+  "mode": "pipeline",
+  "variant": "c-gicp",
+  "dataset": {
+    "id": "ncd21_quad_medium",
+    "sensor": "Ouster OS0-128 Rev C (128 beams, 1024 columns, 90 deg vertical FOV, 10 Hz)",
+    "sequence": "Newer College Multi-Cam 2021, collection 1, quad-medium: 30 s window from ground-truth start + 120 s",
+    "licence": "CC BY-NC-SA 4.0",
+    "evidence": "EMULATED",
+    "consecutive": true,
+    "nominal_hz": 10.0,
+    "same_sensor_as_target": false
+  },
+  "window": {
+    "start": 0,
+    "stop": 300,
+    "n_frames": 300,
+    "of_total": 300
+  },
+  "sensor_model": {
+    "id": "64b-90",
+    "label": "64 beams, 90 deg vFOV (OS0-64 class)",
+    "frame_stride": 1,
+    "evidence": "EMULATED",
+    "beams": 64,
+    "vfov_deg": [
+      -44.67,
+      46.27
+    ],
+    "columns": 1024,
+    "max_points": null,
+    "derived_from": "Ouster OS0-128 Rev C (128 beams, 1024 columns, 90 deg vertical FOV, 10 Hz)"
+  },
+  "parameters": {
+    "voxel_size": 0.15,
+    "min_range": 0.5,
+    "max_range": 50.0,
+    "max_correspondence_distance": 1.5,
+    "max_iterations": 30,
+    "tolerance": 0.0001
+  },
+  "registration_gate": {
+    "min_inlier_ratio": 0.3,
+    "max_mean_residual_m": 0.25,
+    "max_step_translation_m": 1.0,
+    "max_step_rotation_deg": 45.0
+  },
+  "profile": {
+    "id": "laptop-1e",
+    "claim": "One efficiency core (Gracemont, 3.4 GHz) of the development laptop: slow-core proxy, not embedded hardware.",
+    "threads": 1
+  },
+  "methodology": {
+    "repeats": 3,
+    "warmup_frames_excluded": 3,
+    "initial_frame_excluded": true,
+    "deadline_ms": 100.0,
+    "percentile_method": "linear interpolation",
+    "timing": "time.perf_counter wall clock; total_ms = preprocess + register (frame in memory); e2e_ms adds file load",
+    "gc": "default (not disabled)"
+  },
+  "environment": {
+    "cpu_model": "13th Gen Intel(R) Core(TM) i5-13420H",
+    "cpu_architecture": "x86_64",
+    "cpu_cores_physical": 8,
+    "cpu_cores_logical": 12,
+    "cpu_clock_mhz": {
+      "current": 807.8153333333333,
+      "min": 400.0,
+      "max": 4200.0,
+      "note": "reported by the OS; sustained clock under load is not measured"
+    },
+    "ram_total_gb": 14.74,
+    "os": "Linux 7.0.0-43-generic (#43-Ubuntu SMP PREEMPT_DYNAMIC Fri Oct 23 13:25:25 UTC 2026)",
+    "python": "3.14.4",
+    "numpy": "2.5.5",
+    "scipy": "1.18.1",
+    "psutil": "7.2.2",
+    "blas_lapack": {
+      "blas": {
+        "name": "scipy-openblas",
+        "version": "0.3.34.237.2",
+        "openblas configuration": "OpenBLAS 0.3.34.237.2  USE64BITINT DYNAMIC_ARCH NO_AFFINITY Haswell MAX_THREADS=64"
+      },
+      "lapack": {
+        "name": "scipy-openblas",
+        "version": "0.3.34.237.2",
+        "openblas configuration": "OpenBLAS 0.3.34.237.2  USE64BITINT DYNAMIC_ARCH NO_AFFINITY Haswell MAX_THREADS=64"
+      }
+    },
+    "thread_env": {
+      "OMP_NUM_THREADS": "1",
+      "OPENBLAS_NUM_THREADS": "1",
+      "MKL_NUM_THREADS": "1"
+    },
+    "cpu_affinity_effective": [
+      8
+    ],
+    "gpu": "not used (CPU-only pipeline)",
+    "conditions_before_run": {
+      "system_cpu_percent_1s": 1.3,
+      "ram_available_gb": 12.25,
+      "power_plan": "governor=performance epp=performance ac=0/1",
+      "note": "The machine is a shared development laptop, not an isolated benchmark host; other applications may be running."
+    },
+    "cpu_affinity_requested": [
+      8
+    ]
+  },
+  "hardware_label": "Measured on 13th Gen Intel(R) Core(TM) i5-13420H (laptop-1e); not a Raspberry Pi, not embedded hardware",
+  "evidence_tags": {
+    "latency": "MEASURED",
+    "violation_percent": "DERIVED",
+    "peak_rss": "MEASURED",
+    "ate_rpe": "DERIVED (ground truth)",
+    "dataset": "DECLARED"
+  }
+}

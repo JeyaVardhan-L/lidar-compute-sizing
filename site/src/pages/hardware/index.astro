@@ -1,34 +1,51 @@
 ---
 import Layout from '../../layouts/Layout.astro';
-import { readJson, runs } from '../../lib/data';
+import { readJson, base, fmt } from '../../lib/data';
+const S: any = readJson('sizing.json', null);
+const rows: any[] = S?.rows ?? [];
 const prof = readJson<Record<string, string>>('profiles.json', {})!;
-const cmp = readJson<any[]>('comparisons.json', [])!;
-const all = runs();
-const armRuns = all.filter((r) => r.profile === 'arm-cloud');
-const piRuns = all.filter((r) => r.profile === 'pi5');
+const find = (q: any) => rows.find((r) => Object.entries(q).every(([k, v]) => (k === 'sensor' ? r.sensor.id : r[k]) === v));
+const T = [['laptop-4c', '4 performance cores'], ['laptop-1c', '1 performance core'], ['laptop-4e', '4 efficiency cores'], ['laptop-1e', '1 efficiency core']];
+const DS = [['newer_college_bag9', 'OS1-64, walking'], ['ncd21_quad_hard', 'OS0-128, fast turns']];
+const cloud = ['c-gicp', 'c-icp', 'optimized', 'baseline'];
+const cls = (c?: string) => (c === 'FEASIBLE' ? 'pass' : c === 'MARGINAL' ? 'warn' : c === 'INFEASIBLE' ? 'fail' : 'info');
 ---
-<Layout title="Hardware" description="What each hardware tier can and cannot establish.">
+<Layout title="Hardware" description="What each compute tier was measured to do, and what can and cannot be said about other boards.">
   <section class="wrap section">
-    <p class="caption">H · Hardware tiers and conclusions</p>
-    <h2>What the measurements say about constrained hardware</h2>
-    <div class="grid cols-3">
-      <div class="card"><div class="caption">Tier A · measured</div><h3>Development laptop</h3>
-        <p class="muted">Full machine, 4 cores, 1 core (CPU affinity and thread limits; no memory cap, no clock cap).</p>
-        <p>{prof['laptop-4c']}</p></div>
-      <div class="card"><div class="caption">Tier B · {armRuns.length ? 'measured' : 'pending first CI run'}</div><h3>ARM cloud VM</h3>
-        <p>{prof['arm-cloud']}</p>
-        <p class="muted">{armRuns.length ? 'See the metrics page.' : 'The workflow is written and validated locally but has not run: it needs a push.'}</p></div>
-      <div class="card"><div class="caption">Tier C · {piRuns.length ? 'measured' : 'UNAVAILABLE'}</div><h3>Raspberry Pi 5</h3>
-        <p>{piRuns.length ? 'See the metrics page.' : 'Not measured. Run the same CLI with --profile pi5 on a real Pi 5; the CPU model in run.json identifies the hardware.'}</p></div>
+    <p class="caption">H · Compute tiers</p>
+    <h2>What each tier was measured to do</h2>
+    <p class="muted" style="max-width:78ch">One laptop (Intel Core i5-13420H, Ubuntu, performance governor), pinned to subsets of its cores, plus two cloud machines on the same workload. P99 frame time of compiled GICP at full sensor resolution; FEASIBLE = P99 ≤ 50 ms and no scan later than 100 ms.</p>
+    <div class="card table-scroll"><table>
+      <thead><tr><th>Tier</th><th>Stands for</th>{DS.map(([, l]) => <th>{l}<br /><span class="muted">P99</span></th>)}</tr></thead>
+      <tbody>{T.map(([t, l]) => <tr><td><strong>{l}</strong><br /><span class="mono muted">{t}</span></td><td class="muted">{prof[t]}</td>
+        {DS.map(([d]) => { const r = find({ dataset: d, variant: 'c-gicp', profile: t, sensor: 'native', voxel_m: 0.15 });
+          return <td>{r ? <>{fmt(r.latency_ms.p99, 0)} ms<br /><span class={'status ' + cls(r.realtime_class)}>{r.realtime_class}</span></> : '—'}</td>; })}</tr>)}</tbody>
+    </table></div>
+  </section>
+
+  <section class="wrap section">
+    <h2>Cloud machines, same Oxford Spires scans</h2>
+    <p class="muted" style="max-width:78ch">GitHub Actions runners, 4 virtual CPUs each, shared and noisy, not embedded hardware: an ARM Neoverse-N2 server core and an Intel Xeon. Their value is a like-for-like ARM vs x86 comparison and a check that the compiled results are not specific to the laptop.</p>
+    <div class="card table-scroll"><table>
+      <thead><tr><th>Variant</th><th>ARM Neoverse-N2: median / P99</th><th>Intel Xeon: median / P99</th><th>this laptop, 12 threads: median</th></tr></thead>
+      <tbody>{cloud.map((v) => { const a = find({ dataset: 'oxford_spires', variant: v, profile: 'arm-cloud' }), x = find({ dataset: 'oxford_spires', variant: v, profile: 'x86-cloud' }), l = find({ dataset: 'oxford_spires', variant: v, profile: 'laptop-full', phase: 'A' });
+        return <tr><td>{v}</td><td>{a ? fmt(a.latency_ms.p50, 1) + ' / ' + fmt(a.latency_ms.p99, 1) + ' ms' : '—'}</td><td>{x ? fmt(x.latency_ms.p50, 1) + ' / ' + fmt(x.latency_ms.p99, 1) + ' ms' : '—'}</td><td>{l ? fmt(l.latency_ms.p50, 1) + ' ms' : '—'}</td></tr>; })}</tbody>
+    </table></div>
+  </section>
+
+  <section class="wrap section">
+    <div class="grid cols-2">
+      <div class="card alt"><h3>Established</h3><ul style="padding-left:18px;margin:0">
+        <li>Frame time, tail and late-scan rate of each implementation on each pinned tier, for real and emulated sensors.</li>
+        <li>Four cores of the N100's core design carry a 64-beam sensor with half the frame period to spare; one core of either kind does not.</li>
+        <li>On a hybrid CPU, unpinned threads make the compiled pipeline's latency bimodal.</li>
+        <li>The same compiled code is about as fast on an ARM server core as on x86.</li></ul></div>
+      <div class="card alt"><h3>Not established</h3><ul style="padding-left:18px;margin:0">
+        <li>Any specific embedded board (Raspberry Pi 5, Jetson, RK3588, N100): projected only, see <a href={base + 'sizing/'}>Sizing, section 4</a>, tagged ASSUMED.</li>
+        <li>Sustained clocks and thermals of a sealed embedded box, memory bandwidth of small boards.</li>
+        <li>GPU acceleration (the pipeline is CPU-only).</li>
+        <li>Hard real-time guarantees: these are measurements on a general-purpose OS.</li></ul></div>
     </div>
-    <h3 style="margin-top:32px">What can be inferred</h3>
-    <div class="card">
-      {cmp.length ? <ul style="padding-left:18px;margin:0">{cmp.flatMap((c) => c.statements.map((s: string) => <li><span class="caption">{c.dataset} · {c.variant}</span><br />{s}</li>))}</ul> : <p class="muted">Needs published runs on more than one profile.</p>}
-    </div>
-    <div class="grid cols-2" style="margin-top:16px">
-      <div class="card alt"><h3>Established</h3><ul style="padding-left:18px;margin:0"><li>Latency, tail latency and deadline-violation rate of this implementation on this laptop, per profile.</li><li>That limiting cores changes (or does not change) the result.</li></ul></div>
-      <div class="card alt"><h3>Not established</h3><ul style="padding-left:18px;margin:0"><li>Raspberry Pi 5 or any embedded performance. A miss on 4 laptop cores makes a Pi miss very likely; a pass says nothing about the Pi.</li><li>Memory-bandwidth, cache and thermal behaviour of embedded boards.</li><li>Hard real-time guarantees from Python.</li><li>Flight conditions: vibration, IMU fusion, wind.</li></ul></div>
-    </div>
-    <p class="muted" style="margin-top:16px">Jetson and GPU execution are out of scope: the pipeline is CPU-only. A GPU path would be a separate project.</p>
+    <p class="muted" style="margin-top:16px">To measure a board: install the package on it, copy one recording window and run <code>autonav run --dataset ncd21_quad_hard --variant c-gicp --profile pi5 --sensor 64b-90</code>. The CPU model recorded in run.json identifies the machine.</p>
   </section>
 </Layout>

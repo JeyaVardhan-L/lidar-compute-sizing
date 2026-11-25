@@ -9,11 +9,11 @@ const info = all.map((r) => ({ r, run: readJson<any>(`runs/${r.run_id}/run.json`
     <p class="caption">G · Reproducibility centre</p>
     <h2>Reproduce a result</h2>
     <ol style="padding-left:18px;max-width:80ch">
-      <li>Clone the repository and install: <code>python -m venv .venv</code>, activate, <code>pip install -e .</code>; add <code>pip install -e ".[data]"</code> only to fetch data.</li>
+      <li>Clone the repository and install: <code>python3 -m venv .venv</code>, activate, <code>pip install -e ".[data,compiled]"</code> (<code>compiled</code> is the small_gicp wheel for the C++ variants).</li>
       <li>Check the install: <code>python -B -m unittest discover -s tests -v</code>.</li>
-      <li>Obtain the permitted datasets (see the repository's <span class="mono">docs/datasets.md</span>). Newer College access comes from the Oxford Robotics Institute; Oxford Spires is public on Hugging Face (<code>python tools/fetch_spires.py</code>).</li>
+      <li>Obtain the permitted datasets (see the repository's <span class="mono">docs/datasets.md</span>). Newer College access comes from the Oxford Robotics Institute; with the link you receive, <code>python tools/fetch_bag_window.py</code> downloads only the 30 s window you need. Oxford Spires is public on Hugging Face (<code>python tools/fetch_spires.py</code>). Check each recording with <code>python tools/check_layout.py</code>.</li>
       <li>Point the harness at your copy through a git-ignored <span class="mono">config.local.yaml</span> (<span class="mono">dataset_roots</span>), or use the default folders.</li>
-      <li>Run an experiment, e.g. <code>autonav run --dataset newer_college_bag9 --variant baseline --profile laptop-full --repeats 3</code>.</li>
+      <li>Run an experiment, e.g. <code>autonav run --dataset ncd21_quad_hard --variant c-gicp --profile laptop-4e --sensor 64b-90 --repeats 3</code>, or the whole declared campaign with <code>python tools/run_matrix.py</code> followed by <code>python tools/sizing_analysis.py</code>.</li>
       <li>Compare against the records below. Latency varies with the CPU, clocks, background load and library versions; expect the same shape and ordering, not identical milliseconds. Poses and accuracy are deterministic.</li>
     </ol>
     <h3 style="margin-top:32px">Published run records</h3>
