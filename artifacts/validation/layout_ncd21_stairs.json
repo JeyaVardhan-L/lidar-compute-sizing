@@ -1,0 +1,21 @@
+{
+  "dataset": "ncd21_stairs",
+  "configured_layout": "row-major",
+  "organized": [
+    128,
+    1024
+  ],
+  "frames_checked": 5,
+  "layouts": {
+    "row-major": {
+      "median_abs_row_elevation_minus_beam_altitude_deg": 1.569674800902277,
+      "rows_monotonic_in_all_frames": true
+    },
+    "column-major": {
+      "median_abs_row_elevation_minus_beam_altitude_deg": 22.718133329469822,
+      "rows_monotonic_in_all_frames": false
+    }
+  },
+  "detected_layout": "row-major",
+  "matches_configuration": true
+}

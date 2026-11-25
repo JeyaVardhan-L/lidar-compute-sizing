@@ -1,0 +1,89 @@
+# Window validation
+
+Verdict: **PASS**
+
+## spacing
+
+```json
+{
+  "dt_min_s": 0.09874248504638672,
+  "dt_median_s": 0.0999460220336914,
+  "dt_max_s": 0.10133051872253418,
+  "gaps_near_nominal": 299,
+  "gaps_other": 0,
+  "longest_consecutive_run_frames": 300,
+  "longest_run_index_range": [
+    0,
+    299
+  ],
+  "monotonic": true
+}
+```
+
+## ground_truth
+
+```json
+{
+  "n_poses": 1190,
+  "t_range_s": [
+    1625132454.9279726,
+    1625132573.8191595
+  ],
+  "median_dt_s": 0.09999632835388184,
+  "covers_window": true
+}
+```
+
+## association
+
+```json
+{
+  "max_dt_s": 0.02,
+  "frames_with_pose": 300,
+  "frames_without_pose": 0,
+  "max_offset_s": 0.0
+}
+```
+
+## motion
+
+```json
+{
+  "path_length_m": 12.422556508591107,
+  "net_displacement_m": 5.791851068699885,
+  "total_rotation_deg": 770.4285383586896,
+  "speed_mps": {
+    "median": 0.4091760583794847,
+    "p95": 0.544907921339741,
+    "max": 0.6963892935844856
+  },
+  "moving_fraction": 1.0,
+  "moving_threshold_mps": 0.1,
+  "per_step_translation_m_max": 0.06955800529054765,
+  "per_step_rotation_deg_max": 7.927283848243923
+}
+```
+
+## selected_window
+
+```json
+{
+  "rule": "trim leading/trailing steps slower than 0.1 m/s",
+  "first_frame_index": 0,
+  "last_frame_index": 299,
+  "n_frames": 300,
+  "leading_stationary_frames": 0,
+  "trailing_stationary_frames": 0
+}
+```
+
+## headers
+
+```json
+{
+  "distinct_POINTS": [
+    131072
+  ],
+  "bad_files": []
+}
+```

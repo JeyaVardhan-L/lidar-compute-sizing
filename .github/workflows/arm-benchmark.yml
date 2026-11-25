@@ -1,7 +1,7 @@
 name: cloud-benchmark
 
 # Measures the same workload on a real ARM server-class cloud VM and on an x86 cloud VM (neither is a
-# Raspberry Pi or a drone computer). Manual trigger only. Uses an Oxford Spires window fetched from Hugging
+# Raspberry Pi or an embedded computer). Manual trigger only. Uses an Oxford Spires window fetched from Hugging
 # Face inside the runner (CC BY-NC-SA 4.0, not redistributed). Shared VMs are noisy: every run is repeated
 # and the CPU model is recorded, so the hardware is always identified.
 on:

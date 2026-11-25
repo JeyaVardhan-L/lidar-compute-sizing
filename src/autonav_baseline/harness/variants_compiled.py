@@ -1,7 +1,7 @@
 """
 Compiled (C++) registration variants, through small_gicp (Koide, JOSS 2024, MIT licence; PyPI wheel).
 
-Why these exist: the Python variants answer "where does the time go"; a drone would run compiled code.
+Why these exist: the Python variants answer "where does the time go"; a deployed robot runs compiled code.
 These variants keep everything else identical (same range filter, same voxel size, same correspondence
 distance, same iteration cap, same validity gate, same pose convention W_k = W_{k-1} @ T), so the
 difference to `baseline` / `p2plane` is the implementation and, for c-gicp, the error metric.

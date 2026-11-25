@@ -37,6 +37,6 @@ Vulnerability Srbds:                     Not affected
 Vulnerability Tsa:                       Not affected
 Vulnerability Tsx async abort:           Not affected
 Vulnerability Vmscape:                   Not affected
-MemTotal:       16324100 kB
-MemFree:        13386064 kB
-MemAvailable:   15123912 kB
+MemTotal:       16324144 kB
+MemFree:        13432036 kB
+MemAvailable:   15148228 kB

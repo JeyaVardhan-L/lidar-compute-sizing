@@ -58,7 +58,7 @@ class PointCloudPlaybackViewer:
             return
 
         fig, ax = plt.subplots(figsize=(10, 8))
-        fig.canvas.manager.set_window_title("IRoC-U Point Cloud Live Playback")
+        fig.canvas.manager.set_window_title("Point Cloud Playback")
 
         # Initial frame
         frame = self.frames[0]

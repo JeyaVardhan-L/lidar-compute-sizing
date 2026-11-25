@@ -1,6 +1,6 @@
 """
 KITTI Odometry dataset adapter.
-NOTE: Automotive reference dataset — optional computational baseline, NOT representative of UAV operation.
+NOTE: Automotive reference dataset — optional computational baseline, automotive sensor and motion, not a small robot's.
 """
 
 from pathlib import Path
@@ -19,7 +19,7 @@ class KITTIAdapter(DatasetAdapter):
     """
     Adapter for the KITTI Odometry dataset.
     Preserved as an optional terrestrial automotive reference baseline.
-    DO NOT use KITTI to make UAV sensor or UAV hardware claims.
+    Do not use KITTI to make claims about small-robot sensors or onboard computers.
     """
 
     @property
@@ -70,7 +70,7 @@ class KITTIAdapter(DatasetAdapter):
             malformed_files_count=0,
             metadata={
                 "sensor": "Velodyne HDL-64E (automotive, ~13 kg, ~60 W)",
-                "note": "Terrestrial reference only. Not representative of UAV operation.",
+                "note": "Automotive reference only; not representative of a small robot.",
             },
         )
 

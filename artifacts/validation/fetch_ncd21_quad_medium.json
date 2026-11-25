@@ -1,0 +1,66 @@
+{
+  "tool": "tools/fetch_bag_window.py",
+  "bag_size_bytes": 10206636663,
+  "bytes_transferred": 1169539187,
+  "topic": "/os_cloud_node/points",
+  "window_s": [
+    119.99999618530273,
+    149.99999618530273
+  ],
+  "window_span_s": 30.0,
+  "bag_time_span": [
+    1625135500.0000038,
+    1625135690.9986475
+  ],
+  "chunks_fetched": 301,
+  "chunks_total": 5866,
+  "scans_written": 300,
+  "seconds": 550.2,
+  "topic_payload_in_window": {
+    "/alphasense_driver_ros/cam0/compressed": {
+      "bytes": 10045885,
+      "messages": 184,
+      "mbit_per_s": 2.68
+    },
+    "/alphasense_driver_ros/cam1/compressed": {
+      "bytes": 13459347,
+      "messages": 263,
+      "mbit_per_s": 3.59
+    },
+    "/alphasense_driver_ros/cam3/compressed": {
+      "bytes": 10746413,
+      "messages": 269,
+      "mbit_per_s": 2.87
+    },
+    "/alphasense_driver_ros/cam4/compressed": {
+      "bytes": 16795402,
+      "messages": 270,
+      "mbit_per_s": 4.48
+    },
+    "/alphasense_driver_ros/imu": {
+      "bytes": 495280,
+      "messages": 1510,
+      "mbit_per_s": 0.13
+    },
+    "/os_cloud_node/imu": {
+      "bytes": 231504,
+      "messages": 728,
+      "mbit_per_s": 0.06
+    },
+    "/os_cloud_node/points": {
+      "bytes": 1887499500,
+      "messages": 300,
+      "mbit_per_s": 503.33
+    },
+    "/os_node/imu_packets": {
+      "bytes": 41658,
+      "messages": 786,
+      "mbit_per_s": 0.01
+    },
+    "/os_node/lidar_packets": {
+      "bytes": 118503859,
+      "messages": 4759,
+      "mbit_per_s": 31.6
+    }
+  }
+}

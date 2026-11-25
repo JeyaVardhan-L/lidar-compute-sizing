@@ -26,7 +26,7 @@ def filter_by_range(
 ) -> Tuple[np.ndarray, Optional[np.ndarray]]:
     """
     Filters points falling outside [min_range, max_range] Euclidean distance.
-    Useful for removing UAV body self-reflections (< min_range) and distant noise (> max_range).
+    Useful for removing returns from the platform itself (< min_range) and distant noise (> max_range).
     """
     xyz = points[:, :3]
     ranges = np.linalg.norm(xyz, axis=1)

@@ -1,5 +1,5 @@
 {
- "generated_from_runs": 0,
+ "generated_from_runs": 19,
  "rules": {
   "realtime": {
    "FEASIBLE": "P99 <= 50 % of the frame period and no frame above it",
@@ -12,9 +12,1222 @@
    "decision": "DEC-028"
   }
  },
- "rows": [],
- "cost_model": [],
- "scaling": [],
+ "rows": [
+  {
+   "run_id": "20261125T052831Z_oxford_spires_c-gicp_x86-cloud_49637f3",
+   "label": "v2-cloud-x86-cloud-c-gicp",
+   "phase": "cloud",
+   "dataset": "oxford_spires",
+   "motion": "walk (Spires)",
+   "sensor": {
+    "id": "native",
+    "label": "as recorded",
+    "beams": null,
+    "vfov_deg": null,
+    "columns": null,
+    "max_points": null,
+    "evidence": "REAL"
+   },
+   "rate_hz": 10.0,
+   "period_ms": 100.0,
+   "variant": "c-gicp",
+   "profile": "x86-cloud",
+   "cpu_model": "Intel(R) Xeon(R) 6975P-C",
+   "arch": "x86_64",
+   "power": "governor=? epp=? ac=?",
+   "voxel_m": 0.15,
+   "repeats": 3,
+   "frames_measured": 888,
+   "points_raw_p50": 58241.0,
+   "points_voxel_p50": 16838.5,
+   "points_per_s": 582410.0,
+   "latency_ms": {
+    "p50": 20.621850000000002,
+    "p95": 23.9531,
+    "p99": 26.568987,
+    "max": 33.0905
+   },
+   "preprocess_p50_ms": 11.05215,
+   "register_p50_ms": 9.4043,
+   "repeat_p50_range_ms": [
+    20.5994,
+    20.64045
+   ],
+   "violations": 0,
+   "violation_pct": 0.0,
+   "p99_share_of_period_pct": 26.568987000000003,
+   "realtime_class": "FEASIBLE",
+   "accepted_pct": 100.0,
+   "ate_rmse_m": 0.09872916732599729,
+   "rpe10_pct": 1.2332779321283138,
+   "accuracy_class": "ADEQUATE",
+   "iterations_p50": 3.0,
+   "peak_rss_mb": 114.03125,
+   "evidence": {
+    "latency": "MEASURED",
+    "classes": "DERIVED (declared rules DEC-027/028)",
+    "sensor": "REAL"
+   }
+  },
+  {
+   "run_id": "20261125T052838Z_oxford_spires_c-gicp_arm-cloud_49637f3",
+   "label": "v2-cloud-arm-cloud-c-gicp",
+   "phase": "cloud",
+   "dataset": "oxford_spires",
+   "motion": "walk (Spires)",
+   "sensor": {
+    "id": "native",
+    "label": "as recorded",
+    "beams": null,
+    "vfov_deg": null,
+    "columns": null,
+    "max_points": null,
+    "evidence": "REAL"
+   },
+   "rate_hz": 10.0,
+   "period_ms": 100.0,
+   "variant": "c-gicp",
+   "profile": "arm-cloud",
+   "cpu_model": "aarch64",
+   "arch": "aarch64",
+   "power": "governor=? epp=? ac=?",
+   "voxel_m": 0.15,
+   "repeats": 3,
+   "frames_measured": 888,
+   "points_raw_p50": 58241.0,
+   "points_voxel_p50": 16838.5,
+   "points_per_s": 582410.0,
+   "latency_ms": {
+    "p50": 17.18925,
+    "p95": 20.05579,
+    "p99": 22.153085,
+    "max": 27.0209
+   },
+   "preprocess_p50_ms": 8.81855,
+   "register_p50_ms": 8.25005,
+   "repeat_p50_range_ms": [
+    17.08615,
+    17.40445
+   ],
+   "violations": 0,
+   "violation_pct": 0.0,
+   "p99_share_of_period_pct": 22.153085,
+   "realtime_class": "FEASIBLE",
+   "accepted_pct": 100.0,
+   "ate_rmse_m": 0.09872916732677799,
+   "rpe10_pct": 1.2332779321368674,
+   "accuracy_class": "ADEQUATE",
+   "iterations_p50": 3.0,
+   "peak_rss_mb": 108.375,
+   "evidence": {
+    "latency": "MEASURED",
+    "classes": "DERIVED (declared rules DEC-027/028)",
+    "sensor": "REAL"
+   }
+  },
+  {
+   "run_id": "20261125T052856Z_oxford_spires_c-icp_x86-cloud_49637f3",
+   "label": "v2-cloud-x86-cloud-c-icp",
+   "phase": "cloud",
+   "dataset": "oxford_spires",
+   "motion": "walk (Spires)",
+   "sensor": {
+    "id": "native",
+    "label": "as recorded",
+    "beams": null,
+    "vfov_deg": null,
+    "columns": null,
+    "max_points": null,
+    "evidence": "REAL"
+   },
+   "rate_hz": 10.0,
+   "period_ms": 100.0,
+   "variant": "c-icp",
+   "profile": "x86-cloud",
+   "cpu_model": "Intel(R) Xeon(R) 6975P-C",
+   "arch": "x86_64",
+   "power": "governor=? epp=? ac=?",
+   "voxel_m": 0.15,
+   "repeats": 3,
+   "frames_measured": 888,
+   "points_raw_p50": 58241.0,
+   "points_voxel_p50": 16838.5,
+   "points_per_s": 582410.0,
+   "latency_ms": {
+    "p50": 21.6149,
+    "p95": 33.64138,
+    "p99": 44.21610499999999,
+    "max": 60.1188
+   },
+   "preprocess_p50_ms": 3.8293999999999997,
+   "register_p50_ms": 17.7696,
+   "repeat_p50_range_ms": [
+    20.33515,
+    22.36605
+   ],
+   "violations": 0,
+   "violation_pct": 0.0,
+   "p99_share_of_period_pct": 44.21610499999999,
+   "realtime_class": "FEASIBLE",
+   "accepted_pct": 100.0,
+   "ate_rmse_m": 1.274156565467723,
+   "rpe10_pct": 10.823493088102866,
+   "accuracy_class": "INADEQUATE",
+   "iterations_p50": 10.0,
+   "peak_rss_mb": 106.3203125,
+   "evidence": {
+    "latency": "MEASURED",
+    "classes": "DERIVED (declared rules DEC-027/028)",
+    "sensor": "REAL"
+   }
+  },
+  {
+   "run_id": "20261125T052859Z_oxford_spires_c-icp_arm-cloud_49637f3",
+   "label": "v2-cloud-arm-cloud-c-icp",
+   "phase": "cloud",
+   "dataset": "oxford_spires",
+   "motion": "walk (Spires)",
+   "sensor": {
+    "id": "native",
+    "label": "as recorded",
+    "beams": null,
+    "vfov_deg": null,
+    "columns": null,
+    "max_points": null,
+    "evidence": "REAL"
+   },
+   "rate_hz": 10.0,
+   "period_ms": 100.0,
+   "variant": "c-icp",
+   "profile": "arm-cloud",
+   "cpu_model": "aarch64",
+   "arch": "aarch64",
+   "power": "governor=? epp=? ac=?",
+   "voxel_m": 0.15,
+   "repeats": 3,
+   "frames_measured": 888,
+   "points_raw_p50": 58241.0,
+   "points_voxel_p50": 16838.5,
+   "points_per_s": 582410.0,
+   "latency_ms": {
+    "p50": 18.887,
+    "p95": 28.94595,
+    "p99": 36.426584,
+    "max": 50.7578
+   },
+   "preprocess_p50_ms": 2.90585,
+   "register_p50_ms": 15.8854,
+   "repeat_p50_range_ms": [
+    18.66465,
+    19.04735
+   ],
+   "violations": 0,
+   "violation_pct": 0.0,
+   "p99_share_of_period_pct": 36.426584,
+   "realtime_class": "FEASIBLE",
+   "accepted_pct": 100.0,
+   "ate_rmse_m": 1.2741565654677312,
+   "rpe10_pct": 10.823493088102968,
+   "accuracy_class": "INADEQUATE",
+   "iterations_p50": 10.0,
+   "peak_rss_mb": 99.5625,
+   "evidence": {
+    "latency": "MEASURED",
+    "classes": "DERIVED (declared rules DEC-027/028)",
+    "sensor": "REAL"
+   }
+  },
+  {
+   "run_id": "20261125T052922Z_oxford_spires_optimized_x86-cloud_49637f3",
+   "label": "v2-cloud-x86-cloud-optimized",
+   "phase": "cloud",
+   "dataset": "oxford_spires",
+   "motion": "walk (Spires)",
+   "sensor": {
+    "id": "native",
+    "label": "as recorded",
+    "beams": null,
+    "vfov_deg": null,
+    "columns": null,
+    "max_points": null,
+    "evidence": "REAL"
+   },
+   "rate_hz": 10.0,
+   "period_ms": 100.0,
+   "variant": "optimized",
+   "profile": "x86-cloud",
+   "cpu_model": "Intel(R) Xeon(R) 6975P-C",
+   "arch": "x86_64",
+   "power": "governor=? epp=? ac=?",
+   "voxel_m": 0.15,
+   "repeats": 3,
+   "frames_measured": 888,
+   "points_raw_p50": 58241.0,
+   "points_voxel_p50": 16804.0,
+   "points_per_s": 582410.0,
+   "latency_ms": {
+    "p50": 48.7976,
+    "p95": 78.21973,
+    "p99": 93.95415799999996,
+    "max": 116.2516
+   },
+   "preprocess_p50_ms": 2.959,
+   "register_p50_ms": 45.87735,
+   "repeat_p50_range_ms": [
+    48.65805,
+    49.14305
+   ],
+   "violations": 9,
+   "violation_pct": 1.0135135135135136,
+   "p99_share_of_period_pct": 93.95415799999996,
+   "realtime_class": "MARGINAL",
+   "accepted_pct": 100.0,
+   "ate_rmse_m": 1.3217205014605016,
+   "rpe10_pct": 11.389612695757883,
+   "accuracy_class": "INADEQUATE",
+   "iterations_p50": 10.0,
+   "peak_rss_mb": 95.55859375,
+   "evidence": {
+    "latency": "MEASURED",
+    "classes": "DERIVED (declared rules DEC-027/028)",
+    "sensor": "REAL"
+   }
+  },
+  {
+   "run_id": "20261125T052923Z_oxford_spires_optimized_arm-cloud_49637f3",
+   "label": "v2-cloud-arm-cloud-optimized",
+   "phase": "cloud",
+   "dataset": "oxford_spires",
+   "motion": "walk (Spires)",
+   "sensor": {
+    "id": "native",
+    "label": "as recorded",
+    "beams": null,
+    "vfov_deg": null,
+    "columns": null,
+    "max_points": null,
+    "evidence": "REAL"
+   },
+   "rate_hz": 10.0,
+   "period_ms": 100.0,
+   "variant": "optimized",
+   "profile": "arm-cloud",
+   "cpu_model": "aarch64",
+   "arch": "aarch64",
+   "power": "governor=? epp=? ac=?",
+   "voxel_m": 0.15,
+   "repeats": 3,
+   "frames_measured": 888,
+   "points_raw_p50": 58241.0,
+   "points_voxel_p50": 16804.0,
+   "points_per_s": 582410.0,
+   "latency_ms": {
+    "p50": 46.5218,
+    "p95": 72.369315,
+    "p99": 87.07969699999997,
+    "max": 107.6739
+   },
+   "preprocess_p50_ms": 4.3626000000000005,
+   "register_p50_ms": 42.1893,
+   "repeat_p50_range_ms": [
+    46.17,
+    47.53015
+   ],
+   "violations": 5,
+   "violation_pct": 0.5630630630630631,
+   "p99_share_of_period_pct": 87.07969699999995,
+   "realtime_class": "MARGINAL",
+   "accepted_pct": 100.0,
+   "ate_rmse_m": 1.3217205014604223,
+   "rpe10_pct": 11.389612695757174,
+   "accuracy_class": "INADEQUATE",
+   "iterations_p50": 10.0,
+   "peak_rss_mb": 86.6953125,
+   "evidence": {
+    "latency": "MEASURED",
+    "classes": "DERIVED (declared rules DEC-027/028)",
+    "sensor": "REAL"
+   }
+  },
+  {
+   "run_id": "20261125T053012Z_oxford_spires_baseline_arm-cloud_49637f3",
+   "label": "v2-cloud-arm-cloud-baseline",
+   "phase": "cloud",
+   "dataset": "oxford_spires",
+   "motion": "walk (Spires)",
+   "sensor": {
+    "id": "native",
+    "label": "as recorded",
+    "beams": null,
+    "vfov_deg": null,
+    "columns": null,
+    "max_points": null,
+    "evidence": "REAL"
+   },
+   "rate_hz": 10.0,
+   "period_ms": 100.0,
+   "variant": "baseline",
+   "profile": "arm-cloud",
+   "cpu_model": "aarch64",
+   "arch": "aarch64",
+   "power": "governor=? epp=? ac=?",
+   "voxel_m": 0.15,
+   "repeats": 3,
+   "frames_measured": 888,
+   "points_raw_p50": 58241.0,
+   "points_voxel_p50": 16804.0,
+   "points_per_s": 582410.0,
+   "latency_ms": {
+    "p50": 138.4618,
+    "p95": 197.25295500000001,
+    "p99": 233.42866599999994,
+    "max": 277.0969
+   },
+   "preprocess_p50_ms": 47.49135,
+   "register_p50_ms": 90.68180000000001,
+   "repeat_p50_range_ms": [
+    136.1852,
+    139.01510000000002
+   ],
+   "violations": 825,
+   "violation_pct": 92.9054054054054,
+   "p99_share_of_period_pct": 233.42866599999994,
+   "realtime_class": "INFEASIBLE",
+   "accepted_pct": 100.0,
+   "ate_rmse_m": 1.3217205014604223,
+   "rpe10_pct": 11.389612695757174,
+   "accuracy_class": "INADEQUATE",
+   "iterations_p50": 10.0,
+   "peak_rss_mb": 88.78125,
+   "evidence": {
+    "latency": "MEASURED",
+    "classes": "DERIVED (declared rules DEC-027/028)",
+    "sensor": "REAL"
+   }
+  },
+  {
+   "run_id": "20261125T053013Z_oxford_spires_baseline_x86-cloud_49637f3",
+   "label": "v2-cloud-x86-cloud-baseline",
+   "phase": "cloud",
+   "dataset": "oxford_spires",
+   "motion": "walk (Spires)",
+   "sensor": {
+    "id": "native",
+    "label": "as recorded",
+    "beams": null,
+    "vfov_deg": null,
+    "columns": null,
+    "max_points": null,
+    "evidence": "REAL"
+   },
+   "rate_hz": 10.0,
+   "period_ms": 100.0,
+   "variant": "baseline",
+   "profile": "x86-cloud",
+   "cpu_model": "Intel(R) Xeon(R) 6975P-C",
+   "arch": "x86_64",
+   "power": "governor=? epp=? ac=?",
+   "voxel_m": 0.15,
+   "repeats": 3,
+   "frames_measured": 888,
+   "points_raw_p50": 58241.0,
+   "points_voxel_p50": 16804.0,
+   "points_per_s": 582410.0,
+   "latency_ms": {
+    "p50": 125.29390000000001,
+    "p95": 180.23456,
+    "p99": 213.94033499999995,
+    "max": 250.8911
+   },
+   "preprocess_p50_ms": 40.5706,
+   "register_p50_ms": 84.33955,
+   "repeat_p50_range_ms": [
+    125.09185,
+    125.29390000000001
+   ],
+   "violations": 722,
+   "violation_pct": 81.30630630630631,
+   "p99_share_of_period_pct": 213.94033499999995,
+   "realtime_class": "INFEASIBLE",
+   "accepted_pct": 100.0,
+   "ate_rmse_m": 1.3217205014605016,
+   "rpe10_pct": 11.389612695757883,
+   "accuracy_class": "INADEQUATE",
+   "iterations_p50": 10.0,
+   "peak_rss_mb": 94.7734375,
+   "evidence": {
+    "latency": "MEASURED",
+    "classes": "DERIVED (declared rules DEC-027/028)",
+    "sensor": "REAL"
+   }
+  },
+  {
+   "run_id": "20261125T053031Z_newer_college_bag9_baseline_laptop-full_d4e2df5",
+   "label": "v2-A-newer_college_bag9-native-baseline-laptop-full-vox0.15",
+   "phase": "A",
+   "dataset": "newer_college_bag9",
+   "motion": "walk (2020)",
+   "sensor": {
+    "id": "native",
+    "label": "as recorded",
+    "beams": 64,
+    "vfov_deg": [
+     -15.59,
+     17.74
+    ],
+    "columns": 1024,
+    "max_points": null,
+    "evidence": "REAL"
+   },
+   "rate_hz": 10.0,
+   "period_ms": 100.0,
+   "variant": "baseline",
+   "profile": "laptop-full",
+   "cpu_model": "13th Gen Intel(R) Core(TM) i5-13420H",
+   "arch": "x86_64",
+   "power": "governor=performance epp=performance ac=1/1",
+   "voxel_m": 0.15,
+   "repeats": 3,
+   "frames_measured": 798,
+   "points_raw_p50": 65536.0,
+   "points_voxel_p50": 31761.0,
+   "points_per_s": 655360.0,
+   "latency_ms": {
+    "p50": 169.3964,
+    "p95": 310.22416499999997,
+    "p99": 430.75994099999974,
+    "max": 503.3153
+   },
+   "preprocess_p50_ms": 36.237449999999995,
+   "register_p50_ms": 133.224,
+   "repeat_p50_range_ms": [
+    163.9924,
+    172.03015
+   ],
+   "violations": 696,
+   "violation_pct": 87.21804511278195,
+   "p99_share_of_period_pct": 430.75994099999974,
+   "realtime_class": "INFEASIBLE",
+   "accepted_pct": 100.0,
+   "ate_rmse_m": 0.5068686215458537,
+   "rpe10_pct": 7.834970613283863,
+   "accuracy_class": "INADEQUATE",
+   "iterations_p50": 10.0,
+   "peak_rss_mb": 87.515625,
+   "evidence": {
+    "latency": "MEASURED",
+    "classes": "DERIVED (declared rules DEC-027/028)",
+    "sensor": "REAL"
+   }
+  },
+  {
+   "run_id": "20261125T053302Z_newer_college_bag9_optimized_laptop-full_d4e2df5",
+   "label": "v2-A-newer_college_bag9-native-optimized-laptop-full-vox0.15",
+   "phase": "A",
+   "dataset": "newer_college_bag9",
+   "motion": "walk (2020)",
+   "sensor": {
+    "id": "native",
+    "label": "as recorded",
+    "beams": 64,
+    "vfov_deg": [
+     -15.59,
+     17.74
+    ],
+    "columns": 1024,
+    "max_points": null,
+    "evidence": "REAL"
+   },
+   "rate_hz": 10.0,
+   "period_ms": 100.0,
+   "variant": "optimized",
+   "profile": "laptop-full",
+   "cpu_model": "13th Gen Intel(R) Core(TM) i5-13420H",
+   "arch": "x86_64",
+   "power": "governor=performance epp=performance ac=1/1",
+   "voxel_m": 0.15,
+   "repeats": 3,
+   "frames_measured": 798,
+   "points_raw_p50": 65536.0,
+   "points_voxel_p50": 31761.0,
+   "points_per_s": 655360.0,
+   "latency_ms": {
+    "p50": 57.9343,
+    "p95": 112.19682,
+    "p99": 152.67496399999987,
+    "max": 186.706
+   },
+   "preprocess_p50_ms": 3.28515,
+   "register_p50_ms": 54.4035,
+   "repeat_p50_range_ms": [
+    56.6256,
+    58.72905
+   ],
+   "violations": 67,
+   "violation_pct": 8.395989974937343,
+   "p99_share_of_period_pct": 152.67496399999987,
+   "realtime_class": "INFEASIBLE",
+   "accepted_pct": 100.0,
+   "ate_rmse_m": 0.5068686215458537,
+   "rpe10_pct": 7.834970613283863,
+   "accuracy_class": "INADEQUATE",
+   "iterations_p50": 10.0,
+   "peak_rss_mb": 89.484375,
+   "evidence": {
+    "latency": "MEASURED",
+    "classes": "DERIVED (declared rules DEC-027/028)",
+    "sensor": "REAL"
+   }
+  },
+  {
+   "run_id": "20261125T053357Z_newer_college_bag9_p2plane_laptop-full_d4e2df5",
+   "label": "v2-A-newer_college_bag9-native-p2plane-laptop-full-vox0.15",
+   "phase": "A",
+   "dataset": "newer_college_bag9",
+   "motion": "walk (2020)",
+   "sensor": {
+    "id": "native",
+    "label": "as recorded",
+    "beams": 64,
+    "vfov_deg": [
+     -15.59,
+     17.74
+    ],
+    "columns": 1024,
+    "max_points": null,
+    "evidence": "REAL"
+   },
+   "rate_hz": 10.0,
+   "period_ms": 100.0,
+   "variant": "p2plane",
+   "profile": "laptop-full",
+   "cpu_model": "13th Gen Intel(R) Core(TM) i5-13420H",
+   "arch": "x86_64",
+   "power": "governor=performance epp=performance ac=1/1",
+   "voxel_m": 0.15,
+   "repeats": 5,
+   "frames_measured": 1330,
+   "points_raw_p50": 65536.0,
+   "points_voxel_p50": 31761.0,
+   "points_per_s": 655360.0,
+   "latency_ms": {
+    "p50": 189.54685,
+    "p95": 230.36852,
+    "p99": 262.773487,
+    "max": 291.6323
+   },
+   "preprocess_p50_ms": 35.92525,
+   "register_p50_ms": 152.99775,
+   "repeat_p50_range_ms": [
+    187.94819999999999,
+    191.9072
+   ],
+   "violations": 1330,
+   "violation_pct": 100.0,
+   "p99_share_of_period_pct": 262.773487,
+   "realtime_class": "INFEASIBLE",
+   "accepted_pct": 100.0,
+   "ate_rmse_m": 0.15113568120216805,
+   "rpe10_pct": 2.5283655380247447,
+   "accuracy_class": "INADEQUATE",
+   "iterations_p50": 5.0,
+   "peak_rss_mb": 108.73828125,
+   "evidence": {
+    "latency": "MEASURED",
+    "classes": "DERIVED (declared rules DEC-027/028)",
+    "sensor": "REAL"
+   }
+  },
+  {
+   "run_id": "20261125T053801Z_newer_college_bag9_c-icp_laptop-full_d4e2df5",
+   "label": "v2-A-newer_college_bag9-native-c-icp-laptop-full-vox0.15",
+   "phase": "A",
+   "dataset": "newer_college_bag9",
+   "motion": "walk (2020)",
+   "sensor": {
+    "id": "native",
+    "label": "as recorded",
+    "beams": 64,
+    "vfov_deg": [
+     -15.59,
+     17.74
+    ],
+    "columns": 1024,
+    "max_points": null,
+    "evidence": "REAL"
+   },
+   "rate_hz": 10.0,
+   "period_ms": 100.0,
+   "variant": "c-icp",
+   "profile": "laptop-full",
+   "cpu_model": "13th Gen Intel(R) Core(TM) i5-13420H",
+   "arch": "x86_64",
+   "power": "governor=performance epp=performance ac=1/1",
+   "voxel_m": 0.15,
+   "repeats": 5,
+   "frames_measured": 1330,
+   "points_raw_p50": 65536.0,
+   "points_voxel_p50": 31783.0,
+   "points_per_s": 655360.0,
+   "latency_ms": {
+    "p50": 15.41535,
+    "p95": 29.023734999999984,
+    "p99": 102.05263600000056,
+    "max": 166.1187
+   },
+   "preprocess_p50_ms": 3.3122,
+   "register_p50_ms": 12.0119,
+   "repeat_p50_range_ms": [
+    14.542950000000001,
+    16.91135
+   ],
+   "violations": 14,
+   "violation_pct": 1.0526315789473684,
+   "p99_share_of_period_pct": 102.05263600000056,
+   "realtime_class": "INFEASIBLE",
+   "accepted_pct": 100.0,
+   "ate_rmse_m": 0.5522167724841174,
+   "rpe10_pct": 8.424417924875021,
+   "accuracy_class": "INADEQUATE",
+   "iterations_p50": 9.0,
+   "peak_rss_mb": 106.6015625,
+   "evidence": {
+    "latency": "MEASURED",
+    "classes": "DERIVED (declared rules DEC-027/028)",
+    "sensor": "REAL"
+   }
+  },
+  {
+   "run_id": "20261125T053833Z_newer_college_bag9_c-gicp_laptop-full_d4e2df5",
+   "label": "v2-A-newer_college_bag9-native-c-gicp-laptop-full-vox0.15",
+   "phase": "A",
+   "dataset": "newer_college_bag9",
+   "motion": "walk (2020)",
+   "sensor": {
+    "id": "native",
+    "label": "as recorded",
+    "beams": 64,
+    "vfov_deg": [
+     -15.59,
+     17.74
+    ],
+    "columns": 1024,
+    "max_points": null,
+    "evidence": "REAL"
+   },
+   "rate_hz": 10.0,
+   "period_ms": 100.0,
+   "variant": "c-gicp",
+   "profile": "laptop-full",
+   "cpu_model": "13th Gen Intel(R) Core(TM) i5-13420H",
+   "arch": "x86_64",
+   "power": "governor=performance epp=performance ac=1/1",
+   "voxel_m": 0.15,
+   "repeats": 5,
+   "frames_measured": 1330,
+   "points_raw_p50": 65536.0,
+   "points_voxel_p50": 31783.0,
+   "points_per_s": 655360.0,
+   "latency_ms": {
+    "p50": 17.43855,
+    "p95": 22.518009999999997,
+    "p99": 81.42652400000003,
+    "max": 101.548
+   },
+   "preprocess_p50_ms": 8.9359,
+   "register_p50_ms": 8.15405,
+   "repeat_p50_range_ms": [
+    17.06255,
+    17.99825
+   ],
+   "violations": 1,
+   "violation_pct": 0.07518796992481204,
+   "p99_share_of_period_pct": 81.42652400000003,
+   "realtime_class": "MARGINAL",
+   "accepted_pct": 100.0,
+   "ate_rmse_m": 0.08210747628124697,
+   "rpe10_pct": 1.3243668476312742,
+   "accuracy_class": "ADEQUATE",
+   "iterations_p50": 2.0,
+   "peak_rss_mb": 117.99609375,
+   "evidence": {
+    "latency": "MEASURED",
+    "classes": "DERIVED (declared rules DEC-027/028)",
+    "sensor": "REAL"
+   }
+  },
+  {
+   "run_id": "20261125T053906Z_oxford_spires_baseline_laptop-full_d4e2df5",
+   "label": "v2-A-oxford_spires-native-baseline-laptop-full-vox0.15",
+   "phase": "A",
+   "dataset": "oxford_spires",
+   "motion": "walk (Spires)",
+   "sensor": {
+    "id": "native",
+    "label": "as recorded",
+    "beams": null,
+    "vfov_deg": null,
+    "columns": null,
+    "max_points": null,
+    "evidence": "REAL"
+   },
+   "rate_hz": 10.0,
+   "period_ms": 100.0,
+   "variant": "baseline",
+   "profile": "laptop-full",
+   "cpu_model": "13th Gen Intel(R) Core(TM) i5-13420H",
+   "arch": "x86_64",
+   "power": "governor=performance epp=performance ac=1/1",
+   "voxel_m": 0.15,
+   "repeats": 3,
+   "frames_measured": 888,
+   "points_raw_p50": 58241.0,
+   "points_voxel_p50": 16804.0,
+   "points_per_s": 582410.0,
+   "latency_ms": {
+    "p50": 104.9812,
+    "p95": 154.47470499999997,
+    "p99": 192.735927,
+    "max": 220.9983
+   },
+   "preprocess_p50_ms": 32.0679,
+   "register_p50_ms": 72.9631,
+   "repeat_p50_range_ms": [
+    103.993,
+    106.4417
+   ],
+   "violations": 522,
+   "violation_pct": 58.78378378378378,
+   "p99_share_of_period_pct": 192.735927,
+   "realtime_class": "INFEASIBLE",
+   "accepted_pct": 100.0,
+   "ate_rmse_m": 1.3217205014604307,
+   "rpe10_pct": 11.389612695757403,
+   "accuracy_class": "INADEQUATE",
+   "iterations_p50": 10.0,
+   "peak_rss_mb": 86.8671875,
+   "evidence": {
+    "latency": "MEASURED",
+    "classes": "DERIVED (declared rules DEC-027/028)",
+    "sensor": "REAL"
+   }
+  },
+  {
+   "run_id": "20261125T054050Z_oxford_spires_optimized_laptop-full_d4e2df5",
+   "label": "v2-A-oxford_spires-native-optimized-laptop-full-vox0.15",
+   "phase": "A",
+   "dataset": "oxford_spires",
+   "motion": "walk (Spires)",
+   "sensor": {
+    "id": "native",
+    "label": "as recorded",
+    "beams": null,
+    "vfov_deg": null,
+    "columns": null,
+    "max_points": null,
+    "evidence": "REAL"
+   },
+   "rate_hz": 10.0,
+   "period_ms": 100.0,
+   "variant": "optimized",
+   "profile": "laptop-full",
+   "cpu_model": "13th Gen Intel(R) Core(TM) i5-13420H",
+   "arch": "x86_64",
+   "power": "governor=performance epp=performance ac=1/1",
+   "voxel_m": 0.15,
+   "repeats": 3,
+   "frames_measured": 888,
+   "points_raw_p50": 58241.0,
+   "points_voxel_p50": 16804.0,
+   "points_per_s": 582410.0,
+   "latency_ms": {
+    "p50": 37.69455,
+    "p95": 61.474235,
+    "p99": 77.28247699999999,
+    "max": 108.9416
+   },
+   "preprocess_p50_ms": 3.0833500000000003,
+   "register_p50_ms": 34.329499999999996,
+   "repeat_p50_range_ms": [
+    36.43875,
+    39.6362
+   ],
+   "violations": 2,
+   "violation_pct": 0.22522522522522523,
+   "p99_share_of_period_pct": 77.28247699999999,
+   "realtime_class": "MARGINAL",
+   "accepted_pct": 100.0,
+   "ate_rmse_m": 1.3217205014604307,
+   "rpe10_pct": 11.389612695757403,
+   "accuracy_class": "INADEQUATE",
+   "iterations_p50": 10.0,
+   "peak_rss_mb": 91.28125,
+   "evidence": {
+    "latency": "MEASURED",
+    "classes": "DERIVED (declared rules DEC-027/028)",
+    "sensor": "REAL"
+   }
+  },
+  {
+   "run_id": "20261125T054132Z_oxford_spires_p2plane_laptop-full_d4e2df5",
+   "label": "v2-A-oxford_spires-native-p2plane-laptop-full-vox0.15",
+   "phase": "A",
+   "dataset": "oxford_spires",
+   "motion": "walk (Spires)",
+   "sensor": {
+    "id": "native",
+    "label": "as recorded",
+    "beams": null,
+    "vfov_deg": null,
+    "columns": null,
+    "max_points": null,
+    "evidence": "REAL"
+   },
+   "rate_hz": 10.0,
+   "period_ms": 100.0,
+   "variant": "p2plane",
+   "profile": "laptop-full",
+   "cpu_model": "13th Gen Intel(R) Core(TM) i5-13420H",
+   "arch": "x86_64",
+   "power": "governor=performance epp=performance ac=1/1",
+   "voxel_m": 0.15,
+   "repeats": 3,
+   "frames_measured": 888,
+   "points_raw_p50": 58241.0,
+   "points_voxel_p50": 16804.0,
+   "points_per_s": 582410.0,
+   "latency_ms": {
+    "p50": 114.88145,
+    "p95": 133.077655,
+    "p99": 142.79090399999998,
+    "max": 163.5901
+   },
+   "preprocess_p50_ms": 32.179649999999995,
+   "register_p50_ms": 82.68445,
+   "repeat_p50_range_ms": [
+    114.02775,
+    118.42750000000001
+   ],
+   "violations": 775,
+   "violation_pct": 87.27477477477478,
+   "p99_share_of_period_pct": 142.79090399999998,
+   "realtime_class": "INFEASIBLE",
+   "accepted_pct": 100.0,
+   "ate_rmse_m": 0.1525121714531083,
+   "rpe10_pct": 1.3573782967742782,
+   "accuracy_class": "ADEQUATE",
+   "iterations_p50": 6.0,
+   "peak_rss_mb": 100.171875,
+   "evidence": {
+    "latency": "MEASURED",
+    "classes": "DERIVED (declared rules DEC-027/028)",
+    "sensor": "REAL"
+   }
+  },
+  {
+   "run_id": "20261125T054320Z_oxford_spires_c-icp_laptop-full_d4e2df5",
+   "label": "v2-A-oxford_spires-native-c-icp-laptop-full-vox0.15",
+   "phase": "A",
+   "dataset": "oxford_spires",
+   "motion": "walk (Spires)",
+   "sensor": {
+    "id": "native",
+    "label": "as recorded",
+    "beams": null,
+    "vfov_deg": null,
+    "columns": null,
+    "max_points": null,
+    "evidence": "REAL"
+   },
+   "rate_hz": 10.0,
+   "period_ms": 100.0,
+   "variant": "c-icp",
+   "profile": "laptop-full",
+   "cpu_model": "13th Gen Intel(R) Core(TM) i5-13420H",
+   "arch": "x86_64",
+   "power": "governor=performance epp=performance ac=1/1",
+   "voxel_m": 0.15,
+   "repeats": 5,
+   "frames_measured": 1480,
+   "points_raw_p50": 58241.0,
+   "points_voxel_p50": 16838.5,
+   "points_per_s": 582410.0,
+   "latency_ms": {
+    "p50": 11.6787,
+    "p95": 19.9791,
+    "p99": 95.61400100000029,
+    "max": 160.3086
+   },
+   "preprocess_p50_ms": 2.8449999999999998,
+   "register_p50_ms": 8.41415,
+   "repeat_p50_range_ms": [
+    11.0445,
+    12.9636
+   ],
+   "violations": 15,
+   "violation_pct": 1.0135135135135136,
+   "p99_share_of_period_pct": 95.61400100000029,
+   "realtime_class": "MARGINAL",
+   "accepted_pct": 100.0,
+   "ate_rmse_m": 1.2741565654677232,
+   "rpe10_pct": 10.823493088102872,
+   "accuracy_class": "INADEQUATE",
+   "iterations_p50": 10.0,
+   "peak_rss_mb": 102.8984375,
+   "evidence": {
+    "latency": "MEASURED",
+    "classes": "DERIVED (declared rules DEC-027/028)",
+    "sensor": "REAL"
+   }
+  },
+  {
+   "run_id": "20261125T054350Z_oxford_spires_c-gicp_laptop-full_d4e2df5",
+   "label": "v2-A-oxford_spires-native-c-gicp-laptop-full-vox0.15",
+   "phase": "A",
+   "dataset": "oxford_spires",
+   "motion": "walk (Spires)",
+   "sensor": {
+    "id": "native",
+    "label": "as recorded",
+    "beams": null,
+    "vfov_deg": null,
+    "columns": null,
+    "max_points": null,
+    "evidence": "REAL"
+   },
+   "rate_hz": 10.0,
+   "period_ms": 100.0,
+   "variant": "c-gicp",
+   "profile": "laptop-full",
+   "cpu_model": "13th Gen Intel(R) Core(TM) i5-13420H",
+   "arch": "x86_64",
+   "power": "governor=performance epp=performance ac=1/1",
+   "voxel_m": 0.15,
+   "repeats": 5,
+   "frames_measured": 1480,
+   "points_raw_p50": 58241.0,
+   "points_voxel_p50": 16838.5,
+   "points_per_s": 582410.0,
+   "latency_ms": {
+    "p50": 13.8153,
+    "p95": 74.33899,
+    "p99": 86.57592100000001,
+    "max": 96.9163
+   },
+   "preprocess_p50_ms": 7.1953499999999995,
+   "register_p50_ms": 6.199949999999999,
+   "repeat_p50_range_ms": [
+    13.0376,
+    14.5789
+   ],
+   "violations": 0,
+   "violation_pct": 0.0,
+   "p99_share_of_period_pct": 86.57592100000002,
+   "realtime_class": "MARGINAL",
+   "accepted_pct": 100.0,
+   "ate_rmse_m": 0.09872916732607828,
+   "rpe10_pct": 1.233277932128873,
+   "accuracy_class": "ADEQUATE",
+   "iterations_p50": 3.0,
+   "peak_rss_mb": 111.28125,
+   "evidence": {
+    "latency": "MEASURED",
+    "classes": "DERIVED (declared rules DEC-027/028)",
+    "sensor": "REAL"
+   }
+  },
+  {
+   "run_id": "20261125T054430Z_newer_college_bag9_c-icp_laptop-4c_d4e2df5",
+   "label": "v2-B-newer_college_bag9-native-c-icp-laptop-4c-vox0.15",
+   "phase": "B",
+   "dataset": "newer_college_bag9",
+   "motion": "walk (2020)",
+   "sensor": {
+    "id": "native",
+    "label": "as recorded",
+    "beams": 64,
+    "vfov_deg": [
+     -15.59,
+     17.74
+    ],
+    "columns": 1024,
+    "max_points": null,
+    "evidence": "REAL"
+   },
+   "rate_hz": 10.0,
+   "period_ms": 100.0,
+   "variant": "c-icp",
+   "profile": "laptop-4c",
+   "cpu_model": "13th Gen Intel(R) Core(TM) i5-13420H",
+   "arch": "x86_64",
+   "power": "governor=performance epp=performance ac=1/1",
+   "voxel_m": 0.15,
+   "repeats": 3,
+   "frames_measured": 798,
+   "points_raw_p50": 65536.0,
+   "points_voxel_p50": 31783.0,
+   "points_per_s": 655360.0,
+   "latency_ms": {
+    "p50": 26.429000000000002,
+    "p95": 45.54919999999999,
+    "p99": 61.82860699999999,
+    "max": 92.3736
+   },
+   "preprocess_p50_ms": 4.29895,
+   "register_p50_ms": 22.0137,
+   "repeat_p50_range_ms": [
+    26.2545,
+    27.08805
+   ],
+   "violations": 0,
+   "violation_pct": 0.0,
+   "p99_share_of_period_pct": 61.82860699999999,
+   "realtime_class": "MARGINAL",
+   "accepted_pct": 100.0,
+   "ate_rmse_m": 0.552216772484116,
+   "rpe10_pct": 8.424417924874986,
+   "accuracy_class": "INADEQUATE",
+   "iterations_p50": 9.0,
+   "peak_rss_mb": 104.52734375,
+   "evidence": {
+    "latency": "MEASURED",
+    "classes": "DERIVED (declared rules DEC-027/028)",
+    "sensor": "REAL"
+   }
+  }
+ ],
+ "cost_model": [
+  {
+   "variant": "baseline",
+   "profile": "laptop-full",
+   "a_ms": 11.921627382259668,
+   "b_ms_per_kpt": 5.890987447557709,
+   "r2": 0.444689257164704,
+   "frames": 562,
+   "runs": 2,
+   "kpts_range": [
+    11.823,
+    33.491
+   ],
+   "evidence": "DERIVED (fit to MEASURED frames)"
+  },
+  {
+   "variant": "c-gicp",
+   "profile": "laptop-full",
+   "a_ms": 11.246576510113337,
+   "b_ms_per_kpt": 0.27563769571179414,
+   "r2": 0.02328427918863052,
+   "frames": 562,
+   "runs": 2,
+   "kpts_range": [
+    11.86,
+    33.521
+   ],
+   "evidence": "DERIVED (fit to MEASURED frames)"
+  },
+  {
+   "variant": "c-icp",
+   "profile": "laptop-4c",
+   "a_ms": -4.9453803885323735,
+   "b_ms_per_kpt": 1.1305026699641691,
+   "r2": 0.32918196011071876,
+   "frames": 266,
+   "runs": 1,
+   "kpts_range": [
+    18.006,
+    33.521
+   ],
+   "evidence": "DERIVED (fit to MEASURED frames)"
+  },
+  {
+   "variant": "c-icp",
+   "profile": "laptop-full",
+   "a_ms": 6.938185011903143,
+   "b_ms_per_kpt": 0.3248125727236597,
+   "r2": 0.06659824808093662,
+   "frames": 562,
+   "runs": 2,
+   "kpts_range": [
+    11.86,
+    33.521
+   ],
+   "evidence": "DERIVED (fit to MEASURED frames)"
+  },
+  {
+   "variant": "optimized",
+   "profile": "laptop-full",
+   "a_ms": 10.376350687476148,
+   "b_ms_per_kpt": 1.8259384557337301,
+   "r2": 0.32689442521202217,
+   "frames": 562,
+   "runs": 2,
+   "kpts_range": [
+    11.823,
+    33.491
+   ],
+   "evidence": "DERIVED (fit to MEASURED frames)"
+  },
+  {
+   "variant": "p2plane",
+   "profile": "laptop-full",
+   "a_ms": 17.034875929047313,
+   "b_ms_per_kpt": 5.878577348415932,
+   "r2": 0.8948852647072676,
+   "frames": 562,
+   "runs": 2,
+   "kpts_range": [
+    11.823,
+    33.491
+   ],
+   "evidence": "DERIVED (fit to MEASURED frames)"
+  }
+ ],
+ "scaling": [
+  {
+   "what": "ARM cloud vs x86 cloud (oxford_spires, c-gicp)",
+   "measured_ratio_p50": 0.8335454869470974,
+   "arm_cpu": "aarch64",
+   "x86_cpu": "Intel(R) Xeon(R) 6975P-C"
+  },
+  {
+   "what": "ARM cloud vs this laptop, all cores (oxford_spires, c-gicp)",
+   "measured_ratio_p50": 1.2442183665935593,
+   "arm_cpu": "aarch64"
+  },
+  {
+   "what": "ARM cloud vs x86 cloud (oxford_spires, c-icp)",
+   "measured_ratio_p50": 0.8737953911422214,
+   "arm_cpu": "aarch64",
+   "x86_cpu": "Intel(R) Xeon(R) 6975P-C"
+  },
+  {
+   "what": "ARM cloud vs this laptop, all cores (oxford_spires, c-icp)",
+   "measured_ratio_p50": 1.6172176697748895,
+   "arm_cpu": "aarch64"
+  },
+  {
+   "what": "ARM cloud vs x86 cloud (oxford_spires, optimized)",
+   "measured_ratio_p50": 0.9533624604488744,
+   "arm_cpu": "aarch64",
+   "x86_cpu": "Intel(R) Xeon(R) 6975P-C"
+  },
+  {
+   "what": "ARM cloud vs this laptop, all cores (oxford_spires, optimized)",
+   "measured_ratio_p50": 1.2341784157126163,
+   "arm_cpu": "aarch64"
+  },
+  {
+   "what": "ARM cloud vs x86 cloud (oxford_spires, baseline)",
+   "measured_ratio_p50": 1.1050960980542548,
+   "arm_cpu": "aarch64",
+   "x86_cpu": "Intel(R) Xeon(R) 6975P-C"
+  },
+  {
+   "what": "ARM cloud vs this laptop, all cores (oxford_spires, baseline)",
+   "measured_ratio_p50": 1.3189199590021834,
+   "arm_cpu": "aarch64"
+  }
+ ],
  "projection": [],
  "gb6_sources": {
   "i5-13420H P-core (this laptop)": {
@@ -96,7 +1309,58 @@
    ]
   }
  },
- "data_rate": [],
+ "data_rate": [
+  {
+   "window": "ncd20_bag9",
+   "points_topic": "/os1_cloud_node/points",
+   "scans": 271,
+   "pointcloud2_mbit_s": 251.98,
+   "mbytes_per_scan": 3.145936,
+   "scans_per_s": 10.01182207773016,
+   "bag_fraction_downloaded_pct": 99.8468284937703,
+   "evidence": "MEASURED (payload bytes of the point-cloud topic in the bag window)"
+  },
+  {
+   "window": "ncd21_quad_easy",
+   "points_topic": "/os_cloud_node/points",
+   "scans": 300,
+   "pointcloud2_mbit_s": 503.33,
+   "mbytes_per_scan": 6.291665,
+   "scans_per_s": 10.0,
+   "bag_fraction_downloaded_pct": 10.940409571052239,
+   "evidence": "MEASURED (payload bytes of the point-cloud topic in the bag window)"
+  },
+  {
+   "window": "ncd21_quad_hard",
+   "points_topic": "/os_cloud_node/points",
+   "scans": 300,
+   "pointcloud2_mbit_s": 503.33,
+   "mbytes_per_scan": 6.291665,
+   "scans_per_s": 10.0,
+   "bag_fraction_downloaded_pct": 11.509837332045432,
+   "evidence": "MEASURED (payload bytes of the point-cloud topic in the bag window)"
+  },
+  {
+   "window": "ncd21_quad_medium",
+   "points_topic": "/os_cloud_node/points",
+   "scans": 300,
+   "pointcloud2_mbit_s": 503.33,
+   "mbytes_per_scan": 6.291665,
+   "scans_per_s": 10.0,
+   "bag_fraction_downloaded_pct": 11.458614875943292,
+   "evidence": "MEASURED (payload bytes of the point-cloud topic in the bag window)"
+  },
+  {
+   "window": "ncd21_stairs",
+   "points_topic": "/os_cloud_node/points",
+   "scans": 300,
+   "pointcloud2_mbit_s": 503.33,
+   "mbytes_per_scan": 6.291665,
+   "scans_per_s": 10.0,
+   "bag_fraction_downloaded_pct": 18.270384417043932,
+   "evidence": "MEASURED (payload bytes of the point-cloud topic in the bag window)"
+  }
+ ],
  "recommendation": {
   "rule": "DEC-031",
   "candidates": [],
@@ -111,5 +1375,27 @@
    "weakest_feasible_measured_tier": null
   }
  },
- "headline": {}
+ "headline": {
+  "bag9_baseline_p50_ms": 169.3964,
+  "bag9_baseline_p99_ms": 430.75994099999974,
+  "bag9_baseline_ate_m": 0.5068686215458537,
+  "bag9_baseline_viol_pct": 87.21804511278195,
+  "bag9_optimized_p50_ms": 57.9343,
+  "bag9_optimized_p99_ms": 152.67496399999987,
+  "bag9_optimized_ate_m": 0.5068686215458537,
+  "bag9_optimized_viol_pct": 8.395989974937343,
+  "bag9_p2plane_p50_ms": 189.54685,
+  "bag9_p2plane_p99_ms": 262.773487,
+  "bag9_p2plane_ate_m": 0.15113568120216805,
+  "bag9_p2plane_viol_pct": 100.0,
+  "bag9_c_icp_p50_ms": 15.41535,
+  "bag9_c_icp_p99_ms": 102.05263600000056,
+  "bag9_c_icp_ate_m": 0.5522167724841174,
+  "bag9_c_icp_viol_pct": 1.0526315789473684,
+  "bag9_c_gicp_p50_ms": 17.43855,
+  "bag9_c_gicp_p99_ms": 81.42652400000003,
+  "bag9_c_gicp_ate_m": 0.08210747628124697,
+  "bag9_c_gicp_viol_pct": 0.07518796992481204,
+  "python_over_compiled_same_algorithm": 10.988813098632207
+ }
 }

@@ -111,10 +111,10 @@ const H = S?.headline ?? {};
 
   <section class="wrap section">
     <h2>7 · LiDAR data rate (link sizing)</h2>
-    <p class="muted">Bytes per second actually recorded in the bag windows. The point-cloud message is what the odometry consumes; the raw packet stream is what crosses the Ethernet link from the sensor.</p>
+    <p class="muted">Bytes per second of the decoded point-cloud message actually recorded in each window: what the driver hands to the odometry process (all point fields, including padding). The sensor's own packet stream on the wire is smaller; the driver's decoded cloud is what memory and inter-process transport must carry. Last column: how much of each bag the selective fetch had to download.</p>
     <div class="card table-scroll"><table>
-      <thead><tr><th>Window</th><th>scans</th><th>PointCloud2 (Mbit/s)</th><th>raw LiDAR packets (Mbit/s)</th></tr></thead>
-      <tbody>{(S.data_rate ?? []).map((d: any) => <tr><td class="mono">{d.window}</td><td>{d.scans}</td><td>{fmt(d.pointcloud2_mbit_s, 0)}</td><td>{fmt(d.raw_lidar_packets_mbit_s, 0)}</td></tr>)}</tbody>
+      <thead><tr><th>Window</th><th>scans</th><th>scans / s</th><th>MB per scan</th><th>point cloud (Mbit/s)</th><th>bag downloaded</th></tr></thead>
+      <tbody>{(S.data_rate ?? []).map((d: any) => <tr><td class="mono">{d.window}</td><td>{d.scans}</td><td>{fmt(d.scans_per_s, 1)}</td><td>{fmt(d.mbytes_per_scan, 2)}</td><td>{fmt(d.pointcloud2_mbit_s, 0)}</td><td>{fmt(d.bag_fraction_downloaded_pct, 0)} %</td></tr>)}</tbody>
     </table></div>
   </section>
   </>)}
@@ -122,8 +122,8 @@ const H = S?.headline ?? {};
   <section class="wrap section">
     <h2>Limits of this answer</h2>
     <ul style="padding-left:18px;max-width:80ch">
-      <li>Handheld recordings, not flight: no rotor vibration, and the hardest window (145 °/s at the 95th percentile) is a stand-in for aggressive yaw.</li>
-      <li>Scan-to-scan odometry without IMU or map. A flying stack (for example LiDAR-inertial odometry) is more robust and does more work per scan; the cost model is the starting point for sizing it, not its result.</li>
+      <li>Handheld recordings: the platform's own vibration and mounting are not represented, and the hardest window (145 °/s at the 95th percentile) stands in for fast-turning motion.</li>
+      <li>Scan-to-scan odometry without IMU or map. A full stack (for example LiDAR-inertial odometry with a local map) is more robust and does more work per scan; the cost model is the starting point for sizing it, not its result.</li>
       <li>Boards other than this laptop and the cloud VMs are projections (<span class="evidence">ASSUMED</span>). Buy one candidate board and run <code>autonav run --profile pi5</code> (or any profile) on it before committing to a fleet.</li>
       <li>Rules and thresholds are declared in the <a href="https://github.com/JeyaVardhan-L/lidar-compute-sizing/blob/master/docs/decision-log.md">decision log</a>; the tables show raw numbers so other thresholds can be applied.</li>
     </ul>

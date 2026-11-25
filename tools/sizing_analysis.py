@@ -278,15 +278,20 @@ def headline(rows):
 
 
 def data_rates():
+    """MEASURED PointCloud2 rate in each fetched window. Only the point-cloud topic is complete: the fetcher
+    downloads only chunks that contain it, so other topics in those windows are undercounted and not reported."""
     out = []
     for m in sorted((REPO / "artifacts" / "validation").glob("fetch_*.json")):
         d = json.loads(m.read_text(encoding="utf-8"))
-        tp = d.get("topic_payload_in_window", {})
-        pts = tp.get(d["topic"], {})
-        pkt = next((v for k, v in tp.items() if k.endswith("lidar_packets")), None)
-        out.append({"window": m.stem.replace("fetch_", ""), "points_topic": d["topic"],
-                    "pointcloud2_mbit_s": pts.get("mbit_per_s"), "raw_lidar_packets_mbit_s": pkt and pkt["mbit_per_s"],
-                    "scans": d["scans_written"], "evidence": "MEASURED (payload bytes in the bag window)"})
+        pts = d.get("topic_payload_in_window", {}).get(d["topic"], {})
+        if not pts:
+            continue
+        span = d.get("window_span_s") or (d["window_s"][1] - d["window_s"][0])
+        out.append({"window": m.stem.replace("fetch_", ""), "points_topic": d["topic"], "scans": d["scans_written"],
+                    "pointcloud2_mbit_s": pts["mbit_per_s"], "mbytes_per_scan": pts["bytes"] / max(pts["messages"], 1) / 1e6,
+                    "scans_per_s": pts["messages"] / span,
+                    "bag_fraction_downloaded_pct": 100.0 * d["bytes_transferred"] / d["bag_size_bytes"],
+                    "evidence": "MEASURED (payload bytes of the point-cloud topic in the bag window)"})
     return out
 
 

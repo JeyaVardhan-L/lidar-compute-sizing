@@ -63,6 +63,6 @@ cd site && npm ci && npm run build && npm run check && npm run check:numbers
 ```
 
 ## 5. Measure a real board
-On the candidate drone computer (Raspberry Pi 5, Jetson, N100 box ...): install as above, copy one window,
+On the candidate onboard computer (Raspberry Pi 5, Jetson, N100 box ...): install as above, copy one window,
 and run `autonav run --dataset ncd21_quad_hard --variant c-gicp --profile pi5 --sensor <model> --repeats 3`.
 The CPU model in `run.json` identifies the board; that measurement replaces the ASSUMED projection.

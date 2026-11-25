@@ -1,35 +1,17 @@
 # Glossary
 
-| Term | Definition |
-|------|-----------|
-| **ASCEND** | Autonomous Surveyor Challenge for Exploration, Navigation and Dynamics — IRoC-U competition theme |
-| **DoF / 6-DoF** | Degrees of Freedom — 6-DoF means position (x, y, z) + orientation (roll, pitch, yaw) |
-| **EKF** | Extended Kalman Filter — a nonlinear state estimation algorithm |
-| **ESC** | Electronic Speed Controller — controls motor speed |
-| **FOV** | Field of View — the angular extent visible to a sensor |
-| **FPS** | Frames Per Second — processing or sensor rate |
-| **GNSS** | Global Navigation Satellite System — includes GPS, GLONASS, Galileo, etc. |
-| **GPS** | Global Positioning System — US satellite navigation system |
-| **Hz** | Hertz — cycles or measurements per second |
-| **ICP** | Iterative Closest Point — a point-cloud registration algorithm |
-| **IMU** | Inertial Measurement Unit — measures acceleration and angular velocity |
-| **IRoC-U** | ISRO Robotics Challenge – URSC |
-| **ISRO** | Indian Space Research Organisation |
-| **KISS-ICP** | Keep It Small and Simple ICP — a lightweight LiDAR odometry algorithm |
-| **LiDAR** | Light Detection and Ranging — measures distance using laser pulses |
-| **LIO** | LiDAR-Inertial Odometry |
-| **LOAM** | LiDAR Odometry and Mapping |
-| **MAVLink** | Micro Air Vehicle Link — communication protocol for drones |
-| **Odometry** | Estimating position change from sensor data over time |
-| **PID** | Proportional-Integral-Derivative — a control algorithm |
-| **Pixhawk** | An open-hardware flight controller |
-| **Point cloud** | A set of 3D points representing a LiDAR scan |
-| **Pose** | Position + orientation of the robot in 3D space |
-| **PX4** | Open-source flight control firmware |
-| **ROS / ROS 2** | Robot Operating System — middleware framework for robotics |
-| **SLAM** | Simultaneous Localization and Mapping |
-| **UAV** | Unmanned Aerial Vehicle |
-| **UKF** | Unscented Kalman Filter — a nonlinear state estimation algorithm |
-| **URSC** | U R Rao Satellite Centre — ISRO facility in Bengaluru |
-| **VIO** | Visual-Inertial Odometry |
-| **Voxel** | Volumetric pixel — a 3D grid cell used in spatial representations |
+| Term | Meaning |
+|---|---|
+| **ATE** | Absolute trajectory error: RMS position error after rigidly aligning the estimate to ground truth |
+| **RPE** | Relative pose error: error of the displacement over a fixed time or distance window; here as % of distance |
+| **ICP** | Iterative Closest Point: aligns two scans by alternating nearest-neighbour matching and a rigid fit |
+| **GICP** | Generalized-ICP: ICP with a plane-to-plane error built from local point covariances |
+| **Scan-to-scan odometry** | Pose from chaining the rigid motion between consecutive scans (no map, no loop closure) |
+| **Voxel filter** | Replaces all points in each cube of a given size by their centroid |
+| **Frame period** | Time between scans (100 ms at 10 Hz): the budget a scan must be processed in |
+| **P50 / P99** | Median and 99th-percentile frame time |
+| **FEASIBLE / MARGINAL** | Declared real-time classes (DEC-027) |
+| **ADEQUATE** | Declared accuracy class (DEC-028) |
+| **Emulated sensor** | A cheaper sensor derived from a real high-resolution scan by dropping beams, columns, points or frames (DEC-025) |
+| **E-core / P-core** | Efficiency and performance cores of a hybrid Intel CPU |
+| **MEASURED / DERIVED / ASSUMED** | Evidence tags on every published number |

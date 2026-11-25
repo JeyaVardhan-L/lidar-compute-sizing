@@ -1,25 +1,11 @@
-# Source Code
+# src/autonav_baseline
 
-## Purpose
+The measurement pipeline (installed as the `autonav` command). Module map: [docs/architecture.md](../docs/architecture.md).
 
-This directory will contain the production source code for the autonomous navigation stack.
-
-## Planned Structure
-
-```
-src/
-├── README.md            # This file
-├── sensor_fusion/       # Sensor fusion module
-├── odometry/            # Pose estimation (LiDAR + visual odometry)
-├── mapping/             # Local mapping
-├── planning/            # Path planning
-├── mission/             # Mission manager
-├── communication/       # Ground station communication
-└── common/              # Shared utilities
-```
-
-## Status
-
-**NOT YET IMPLEMENTED.** Production code is planned for Phase 2+.
-
-Phase 1 experiment scripts are in `experiments/*/scripts/`, not here. Code will be promoted to `src/` when it matures from experimental to production quality.
+| Package | Contents |
+|---|---|
+| `datasets/` | adapters (Newer College, Oxford Spires, KITTI, synthetic for tests), PCD reader, ground-truth loader |
+| `lidar/` | filters, scan-to-scan ICP with validity gate, point-to-plane ICP, sensor emulation |
+| `metrics/` | ATE / RPE with timestamp association and Umeyama alignment |
+| `harness/` | datasets, sensor models and compute profiles; worker, runner, variants (Python and compiled), verdicts |
+| `lab/` | local web UI that launches runs (no algorithm logic) |

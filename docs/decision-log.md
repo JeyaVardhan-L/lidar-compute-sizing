@@ -4,19 +4,17 @@ All significant design and engineering decisions are recorded here with context,
 
 ---
 
-## DEC-001 — Navigation Computation Architecture
+## DEC-001 — Odometry runs on the platform's own computer
 
 | Field | Value |
 |-------|-------|
 | **Date** | 2026-10-07 |
 | **Status** | ACCEPTED |
-| **Decision** | Navigation computation shall be designed as onboard computation rather than depending on ground-station computation. |
-| **Context** | The UAV must navigate autonomously in a GPS-denied environment. The competition may restrict or prohibit telemetry during the mission. Even if communication is available, relying on it for navigation creates a single point of failure. |
-| **Options considered** | 1. All computation onboard the UAV. 2. Offload heavy computation to the ground station via RF link. 3. Hybrid — critical path onboard, optional augmentation from ground. |
-| **Evidence** | IRoC-U 2026 rules state "No telemetry or remote piloting during the mission." Latency over RF links would introduce unacceptable delays for real-time control. |
-| **Reason** | Autonomous navigation must remain operational without ground computation. Competition rules prohibit remote piloting. Communication link failure must not cause navigation failure. |
-| **Consequences** | The onboard computer must be powerful enough to run the full navigation stack. This increases weight and power requirements. |
-| **Revisit condition** | If competition rules explicitly permit ground-station computation for navigation, this decision should be re-evaluated. |
+| **Decision** | The study sizes computation that runs **on board** the moving platform, not on a remote machine. |
+| **Context** | A robot that navigates by LiDAR odometry cannot depend on a radio link for its own pose: link loss or link latency would become navigation failure. |
+| **Options considered** | 1. All odometry on board. 2. Offload to a remote computer. 3. Hybrid (critical path on board). |
+| **Consequences** | The onboard computer must carry the whole per-scan cost within the scan period, with room for the rest of the stack. That is the quantity this study measures. |
+| **Revisit condition** | A platform with a guaranteed low-latency link to off-board compute. |
 
 ---
 
@@ -27,12 +25,12 @@ All significant design and engineering decisions are recorded here with context,
 | **Date** | 2026-10-07 |
 | **Status** | ACCEPTED |
 | **Decision** | Phase 1 experiments shall use publicly available sensor datasets rather than collecting our own data. |
-| **Context** | We do not yet have a LiDAR sensor or finalized hardware. We need to understand sensor data characteristics before purchasing anything. |
+| **Context** | The question is which sensor and computer to choose, so the study must not depend on owning either. Real recordings with ground truth let sensor data be characterised before anything is bought. |
 | **Options considered** | 1. Purchase a LiDAR first and collect our own data. 2. Use public datasets to characterize data before purchasing. 3. Use only simulation data. |
 | **Evidence** | Multiple high-quality public LiDAR datasets exist (KITTI, Newer College, MulRan, etc.) with known sensor specifications and ground truth. |
-| **Reason** | Public datasets allow us to study real sensor data at zero cost and produce evidence to justify future hardware purchases. |
-| **Consequences** | Our experiments will reflect the characteristics of the specific sensors used in those datasets, not necessarily the exact sensor we will purchase. Results must be interpreted accordingly. |
-| **Revisit condition** | When we have our own hardware and can collect data. |
+| **Reason** | Public datasets give real sensor data at zero cost and evidence for hardware choices before purchase. |
+| **Consequences** | Experiments reflect the characteristics of the specific sensors used in those datasets, not necessarily the sensor finally chosen. Results must be interpreted accordingly. |
+| **Revisit condition** | When the chosen sensor is available to record with. |
 
 ---
 
@@ -247,8 +245,8 @@ All significant design and engineering decisions are recorded here with context,
 
 # v2 — Sensor and compute sizing (2026-11-25)
 
-The question changes from "does this Python pipeline meet 100 ms?" to the funding question it was always
-for: **which LiDAR and which onboard computer, justified so neither has to be replaced later.** DEC-024 to
+The question widens from "does this Python pipeline meet 100 ms?" to the decision it exists to support:
+**which LiDAR and which onboard computer, justified by measurement so that neither has to be replaced later.** DEC-024 to
 DEC-030 were written before any v2 result was seen.
 
 ## DEC-024 — Compiled registration through small_gicp
@@ -257,7 +255,7 @@ DEC-030 were written before any v2 result was seen.
 |-------|-------|
 | **Date** | 2026-11-25 |
 | **Decision** | Add `c-icp` (point-to-point ICP, the baseline algorithm) and `c-gicp` (GICP, constant-velocity guess) through `small_gicp` 1.0.1 (Koide, JOSS 2024, MIT, PyPI wheel). Filters, voxel size, correspondence distance, iteration cap, validity gate and pose convention are shared with the Python variants. |
-| **Why** | A drone runs compiled code. Python measurements show where the time goes; sizing must use what would fly. `c-icp` against `baseline` isolates the implementation cost (same estimator, trajectories agree to millimetres in the unit test); `c-gicp` is the production-style estimator. |
+| **Why** | A deployed robot runs compiled code. Python measurements show where the time goes; sizing must use what would be deployed. `c-icp` against `baseline` isolates the implementation cost (same estimator, trajectories agree to millimetres in the unit test); `c-gicp` is the production-style estimator. |
 | **Alternatives** | KISS-ICP (no wheel for Python 3.14; building it from source was not permitted in this session); Open3D ICP (heavier dependency, slower in published comparisons); FAST-LIO2 (needs ROS and IMU fusion: the right next step, out of scope here). |
 | **Gate residual** | `c-icp`: RMS inlier residual from the solver's final error (error = 0.5 Σr², verified), at least as strict as the mean. `c-gicp`: mean nearest-neighbour residual measured after alignment; its cost is inside `register_ms`. |
 
@@ -273,7 +271,7 @@ DEC-030 were written before any v2 result was seen.
 
 | Field | Value |
 |-------|-------|
-| **Windows** | Newer College 2021 collection 1, quad-easy / quad-medium / quad-hard: the 30 s from ground-truth start + 120 s (95th-percentile angular rate 27 / 53 / 145 °/s: walking to aggressive, drone-like yaw). Stairs: + 30 s to + 60 s (confined, vertical motion). Newer College 2020 bag 9 and the Oxford Spires window are kept for continuity with v1. |
+| **Windows** | Newer College 2021 collection 1, quad-easy / quad-medium / quad-hard: the 30 s from ground-truth start + 120 s (95th-percentile angular rate 27 / 53 / 145 °/s: steady walking to aggressive, fast-turning motion). Stairs: + 30 s to + 60 s (confined, vertical motion). Newer College 2020 bag 9 and the Oxford Spires window are kept for continuity with v1. |
 | **Download** | `tools/fetch_bag_window.py` reads the bag index by HTTP range requests and downloads only the chunks that overlap the window (about 1.6 GB of a 10 GB bag). Raw data lives outside the repository and is deleted when the study ends. |
 | **Ground truth** | 2021 poses are of the `base` frame; the dataset's calibration gives base ← sensor as a 9.1 cm translation with identity rotation, so the lever-arm bias of DEC-022 is about 0.1 m at most and smaller in practice. |
 
@@ -284,14 +282,14 @@ DEC-030 were written before any v2 result was seen.
 | **FEASIBLE** | Over all measured frames of all repeats: P99 of pipeline latency ≤ **50 %** of the frame period, and **no** frame above the full period. The other 50 % is reserved for mapping, planning, control and the OS on the same computer. |
 | **MARGINAL** | P99 ≤ 100 % of the period (it keeps up, but leaves nothing for the rest of the stack). |
 | **INFEASIBLE** | Otherwise. |
-| **Why 50 %** | An engineering margin, not a measurement (`ASSUMED`): odometry is one of several real-time tasks, and sustained clocks on a sealed drone computer are lower than on a ventilated laptop. |
+| **Why 50 %** | An engineering margin, not a measurement (`ASSUMED`): odometry is one of several real-time tasks, and sustained clocks on a sealed embedded computer are lower than on a ventilated laptop. |
 
 ## DEC-028 — Accuracy rule for a sensor (declared before results)
 
 | Field | Value |
 |-------|-------|
 | **ADEQUATE** | On a window: ≥ 99 % of registrations accepted by the gate, translational RPE over 10 m ≤ **2 %**, and ATE RMSE ≤ **0.30 m** over the 30 s window. |
-| **Why** | `ASSUMED` targets for a small indoor/outdoor drone without loop closure: 2 % of 10 m is 0.2 m of drift, a fraction of a typical 1 m obstacle clearance; scan-to-scan odometry is the weakest link and a map/IMU can only improve it. The thresholds are shown next to the raw numbers so a reader can apply their own. |
+| **Why** | `ASSUMED` targets for a small indoor/outdoor robot without loop closure: 2 % of 10 m is 0.2 m of drift, a fraction of a typical 1 m obstacle clearance; scan-to-scan odometry is the weakest link and a map/IMU can only improve it. The thresholds are shown next to the raw numbers so a reader can apply their own. |
 
 ## DEC-029 — Compute tiers and what they stand for
 
@@ -311,7 +309,7 @@ DEC-030 were written before any v2 result was seen.
 
 | Field | Value |
 |-------|-------|
-| **Sensor** | The emulated sensor model with the **fewest points per second** whose `c-gicp` runs are ADEQUATE (DEC-028) on **all four** 2021 windows (easy, medium, hard, stairs) at its rate. Ties go to the wider vertical FOV (a drone sees floors, ceilings and obstacles above and below). 10 Hz and 5 Hz are reported separately. |
+| **Sensor** | The emulated sensor model with the **fewest points per second** whose `c-gicp` runs are ADEQUATE (DEC-028) on **all four** 2021 windows (easy, medium, hard, stairs) at its rate. Ties go to the wider vertical FOV (more floor, ceiling and overhead structure to register against). 10 Hz and 5 Hz are reported separately. |
 | **Compute** | For the recommended sensor on quad-hard, the weakest **measured** tier that is FEASIBLE (DEC-027), in the order 1 E-core → 4 E-cores (N100-class proxy) → full laptop. Boards that were not measured are listed with their ASSUMED single-thread projection and never called FEASIBLE on that basis alone. |
 | **Computed by** | `tools/sizing_analysis.py` (`headline.recommendation`), so the rule, not a reader, picks the answer. |
 
@@ -334,3 +332,18 @@ DEC-030 were written before any v2 result was seen.
 | **Problem** | DEC-006 set `max_step_rotation_deg = 20` from walking physics. On these windows it would reject correct registrations of real motion, measuring the gate rather than the sensor. |
 | **Decision** | For the Newer College 2021 datasets only, `max_step_rotation_deg = 45` (ground-truth maximum plus margin; still rejects a wild solution). Translation, inlier and residual thresholds are unchanged. Walking datasets (2020 bag 9, Spires) keep DEC-006. The gate in effect is recorded in each `run.json` (`registration_gate`). |
 | **Also fixed** | `validate_window.py` assumed the 29-byte 2020 record; it now reads SIZE × COUNT from each header (2021 records are 27 bytes). |
+
+## DEC-034 — Stairs ground truth: two quaternions renormalised
+
+| Field | Value |
+|-------|-------|
+| **Found** | The loader refused `gt-nc-stairs.csv`: rows 385 and 546 of 1,190 have quaternion norms 0.9938 and 0.9932 (qw printed with two digits). |
+| **Decision** | `tools/normalize_gt.py` writes a copy with every quaternion scaled to unit length (refusing anything off by more than 0.01); the harness reads the copy. The loader's 1e-3 check is unchanged. Record: `artifacts/validation/gt_normalize_ncd21_stairs.json`. |
+| **Caveat** | The stairs window has only 12.4 m of ground-truth path, so RPE over 10 m rests on few segments there; ATE and the 5 m RPE are reported alongside. |
+
+## DEC-035 — Phase A re-measured after the downloads finished
+
+| Field | Value |
+|-------|-------|
+| **Found** | The first phase-A runs (all `laptop-full`) ran while the dataset downloads were still active, pinned to logical CPU 11. `laptop-full` lets the compiled variants use all 12 logical CPUs, CPU 11 included, and their P99 (81-102 ms) was far above their median (15-17 ms) and above the same code on 4 performance cores. |
+| **Decision** | All phase-A runs were deleted and re-measured by the resumable campaign after every download had finished. Phase B (`laptop-4c/1c` use CPUs 0-6; the E-core profiles started after the downloads ended) was kept. |

@@ -1,0 +1,21 @@
+{
+  "dataset": "ncd21_quad_easy",
+  "configured_layout": "row-major",
+  "organized": [
+    128,
+    1024
+  ],
+  "frames_checked": 5,
+  "layouts": {
+    "row-major": {
+      "median_abs_row_elevation_minus_beam_altitude_deg": 0.15602157500435043,
+      "rows_monotonic_in_all_frames": true
+    },
+    "column-major": {
+      "median_abs_row_elevation_minus_beam_altitude_deg": 23.25833673733164,
+      "rows_monotonic_in_all_frames": false
+    }
+  },
+  "detected_layout": "row-major",
+  "matches_configuration": true
+}
