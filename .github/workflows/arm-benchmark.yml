@@ -34,14 +34,15 @@ jobs:
         run: python -B -m unittest discover -s tests
       - name: Record the hardware
         run: |
-          mkdir -p artifacts
-          lscpu > artifacts/lscpu.txt
-          cat /proc/meminfo | head -3 >> artifacts/lscpu.txt
-          cat artifacts/lscpu.txt
+          mkdir -p artifacts/local   # git-ignored: keeps the tree clean so runs record git.dirty = false
+          lscpu > artifacts/local/lscpu.txt
+          cat /proc/meminfo | head -3 >> artifacts/local/lscpu.txt
+          cat artifacts/local/lscpu.txt
       - name: Fetch a 300-frame Oxford Spires window
         run: python tools/fetch_spires.py --frames 300 --out datasets/oxford-spires/window
       - name: Measure (compiled variants first, then Python)
         run: |
+          git status --porcelain   # must be empty: every run records the commit and whether the tree was clean
           for v in c-gicp c-icp optimized baseline; do
             python -m autonav_baseline run --dataset oxford_spires --variant $v --profile ${{ matrix.profile }} \
               --repeats ${{ github.event.inputs.repeats }} --label v2-cloud-${{ matrix.profile }}-$v
@@ -52,4 +53,4 @@ jobs:
           name: runs-${{ matrix.profile }}
           path: |
             artifacts/runs/
-            artifacts/lscpu.txt
+            artifacts/local/lscpu.txt

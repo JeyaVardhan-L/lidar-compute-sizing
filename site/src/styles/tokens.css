@@ -16,6 +16,9 @@
   --viz-truth: #0a0a0a;       /* ground-truth trajectory */
   /* benchmark comparison series (charts only) */
   --bench-1: #404040; --bench-2: #0e7490; --bench-3: #6d28d9; --bench-4: #a3a3a3;
+  /* categorical series for the sizing charts (validated: lightness, chroma, CVD; two slots < 3:1 contrast,
+     so every chart has a legend and a table view). Fixed order: never cycled. */
+  --series-1: #2a78d6; --series-2: #eb6834; --series-3: #1baf7a; --series-4: #6250d6; --series-5: #e87ba4;
   --status-pass: #15803d;
   --status-warn: #a16207;
   --status-fail: #e7000b;     /* red = fail only */

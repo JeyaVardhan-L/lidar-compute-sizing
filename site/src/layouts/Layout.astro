@@ -4,8 +4,8 @@ import '../styles/global.css';
 import { MODE, base } from '../lib/data';
 const { title, description = '' } = Astro.props;
 const nav = [
-  ['A', 'Overview', ''], ['B', 'Datasets', 'datasets/'], ['C', 'Algorithm', 'algorithm/'], ['D', '3D viewer', 'viewer/'],
-  ['E', 'Metrics', 'metrics/'], ['F', 'Reproduce', 'reproduce/'], ['G', 'Hardware', 'hardware/'],
+  ['A', 'Overview', ''], ['B', 'Sizing', 'sizing/'], ['C', 'Datasets', 'datasets/'], ['D', 'Algorithm', 'algorithm/'],
+  ['E', '3D viewer', 'viewer/'], ['F', 'Metrics', 'metrics/'], ['G', 'Reproduce', 'reproduce/'], ['H', 'Hardware', 'hardware/'],
 ];
 ---
 <!doctype html>
@@ -13,14 +13,14 @@ const nav = [
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>{title} · AutoNav</title>
+    <title>{title} · LiDAR compute sizing</title>
     <meta name="description" content={description} />
   </head>
   <body>
     <header style="background:var(--color-surface-alt);border-bottom:1px solid var(--color-hairline)">
       <div class="wrap" style="display:flex;flex-wrap:wrap;align-items:center;gap:12px;padding-top:12px;padding-bottom:12px">
-        <a href={base} style="font-weight:600;text-decoration:none">AutoNav</a>
-        <span class="badge outline">{MODE === 'lab' ? 'Lab mode (local)' : 'Showcase (static, read-only)'}</span>
+        <a href={base} style="font-weight:600;text-decoration:none">LiDAR compute sizing</a>
+        {MODE === 'lab' && <span class="badge outline">Lab mode (local)</span>}
         <nav aria-label="Sections" style="display:flex;flex-wrap:wrap;gap:4px;margin-left:auto">
           {nav.map(([k, label, href]) => <a class="badge" style="text-decoration:none" href={base + href}>{k} · {label}</a>)}
           {MODE === 'lab' && <a class="badge solid" style="text-decoration:none" href={base + 'lab/'}>Lab</a>}
@@ -29,8 +29,8 @@ const nav = [
     </header>
     <main><slot /></main>
     <footer class="wrap section muted" style="font-size:12px">
-      <p>A measurement study, not a navigation system. Every result names the hardware it ran on.</p>
-      <p>Data: Newer College Dataset (Ramezani et al., IROS 2020) and Oxford Spires (Tao et al., 2025), both CC BY-NC-SA 4.0; point-cloud views are heavily decimated excerpts for illustration. Code: MIT.</p>
+      <p>A measurement study, not a navigation system. Every result names the hardware it ran on; emulated sensors and projected boards are labelled as such.</p>
+      <p>Data: Newer College Dataset (Ramezani et al., IROS 2020), its Multi-Camera LiDAR-Inertial extension (Zhang et al., 2021) and Oxford Spires (Tao et al., 2025), all CC BY-NC-SA 4.0; point-cloud views are heavily decimated excerpts for illustration. Code: MIT. <a href="https://github.com/JeyaVardhan-L/lidar-compute-sizing">Source</a>.</p>
     </footer>
   </body>
 </html>

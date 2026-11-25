@@ -217,6 +217,66 @@ def projection(rows, sensor_id, dataset="ncd21_quad_hard", variant="c-gicp"):
     return out
 
 
+WINDOWS21 = ["ncd21_quad_easy", "ncd21_quad_medium", "ncd21_quad_hard", "ncd21_stairs"]
+TIER_ORDER = ["laptop-1e", "laptop-4e", "laptop-full"]
+
+
+def recommendation(rows):
+    """DEC-031, applied mechanically."""
+    by_sensor = {}
+    for r in rows:
+        if r["phase"] == "C" and r["variant"] == "c-gicp" and r["profile"] == "laptop-full" and r["dataset"] in WINDOWS21:
+            by_sensor.setdefault(r["sensor"]["id"], {})[r["dataset"]] = r
+    cands = []
+    for sid, per in by_sensor.items():
+        if set(per) != set(WINDOWS21):
+            continue
+        ok = all(per[d]["accuracy_class"] == "ADEQUATE" for d in WINDOWS21)
+        pps = float(np.median([per[d]["points_per_s"] for d in WINDOWS21]))
+        vfov = per["ncd21_quad_hard"]["sensor"].get("vfov_deg") or [0, 0]
+        cands.append({"sensor": sid, "label": per["ncd21_quad_hard"]["sensor"]["label"], "adequate_all": ok,
+                      "points_per_s": pps, "rate_hz": per["ncd21_quad_hard"]["rate_hz"],
+                      "vfov_span_deg": float(vfov[1] - vfov[0]),
+                      "per_window": {d: {"accuracy_class": per[d]["accuracy_class"], "ate_rmse_m": per[d]["ate_rmse_m"],
+                                         "rpe10_pct": per[d]["rpe10_pct"], "accepted_pct": per[d]["accepted_pct"]} for d in WINDOWS21}})
+    out = {"rule": "DEC-031", "candidates": sorted(cands, key=lambda c: (c["rate_hz"], c["points_per_s"]))}
+    for hz in (10.0, 5.0):
+        ok = [c for c in cands if c["adequate_all"] and c["rate_hz"] == hz]
+        ok.sort(key=lambda c: (c["points_per_s"], -c["vfov_span_deg"]))
+        pick = ok[0] if ok else None
+        tiers = []
+        if pick:
+            for t in TIER_ORDER:
+                r = _find(rows, dataset="ncd21_quad_hard", variant="c-gicp", profile=t, sensor=pick["sensor"], voxel_m=0.15)
+                if r:
+                    tiers.append({"profile": t, "p99_ms": r["latency_ms"]["p99"], "share_pct": r["p99_share_of_period_pct"],
+                                  "class": r["realtime_class"], "violations": r["violations"]})
+        weakest = next((t for t in tiers if t["class"] == "FEASIBLE"), None)
+        out[f"at_{int(hz)}hz"] = {"sensor": pick, "tiers_on_quad_hard": tiers, "weakest_feasible_measured_tier": weakest}
+    return out
+
+
+def headline(rows):
+    """Named scalar values the site renders through <Num file="sizing"> (checked by check-numbers)."""
+    h = {}
+    for v in ("baseline", "optimized", "p2plane", "c-icp", "c-gicp"):
+        r = _find(rows, dataset="newer_college_bag9", variant=v, profile="laptop-full", phase="A")
+        if r:
+            key = v.replace("-", "_")
+            h[f"bag9_{key}_p50_ms"] = r["latency_ms"]["p50"]
+            h[f"bag9_{key}_p99_ms"] = r["latency_ms"]["p99"]
+            h[f"bag9_{key}_ate_m"] = r["ate_rmse_m"]
+            h[f"bag9_{key}_viol_pct"] = r["violation_pct"]
+    if "bag9_baseline_p50_ms" in h and "bag9_c_icp_p50_ms" in h:
+        h["python_over_compiled_same_algorithm"] = h["bag9_baseline_p50_ms"] / h["bag9_c_icp_p50_ms"]
+    for t in ("laptop-full", "laptop-4c", "laptop-1c", "laptop-4e", "laptop-1e"):
+        r = _find(rows, dataset="ncd21_quad_hard", variant="c-gicp", profile=t, sensor="native", voxel_m=0.15)
+        if r:
+            h[f"hard_native_cgicp_{t.replace('-', '_')}_p99_ms"] = r["latency_ms"]["p99"]
+            h[f"hard_native_cgicp_{t.replace('-', '_')}_share_pct"] = r["p99_share_of_period_pct"]
+    return h
+
+
 def data_rates():
     out = []
     for m in sorted((REPO / "artifacts" / "validation").glob("fetch_*.json")):
@@ -255,7 +315,9 @@ def main() -> int:
         "projection": [p for p in (projection(rows, s) for s in recommended) if p],
         "gb6_sources": GB6,
         "data_rate": data_rates(),
+        "recommendation": recommendation(rows),
     }
+    out["headline"] = headline(rows)
     for dest in (REPO / "artifacts" / "sizing" / "sizing.json", REPO / "site" / "public" / "data" / "sizing.json"):
         dest.parent.mkdir(parents=True, exist_ok=True)
         dest.write_text(json.dumps(out, indent=1, default=float), encoding="utf-8")

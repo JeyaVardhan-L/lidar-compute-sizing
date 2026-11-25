@@ -1,0 +1,134 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import Num from '../../components/Num.astro';
+import { readJson, base, fmt } from '../../lib/data';
+const S: any = readJson('sizing.json', null);
+const rows: any[] = S?.rows ?? [];
+const W = ['ncd21_quad_easy', 'ncd21_quad_medium', 'ncd21_quad_hard', 'ncd21_stairs'];
+const WL: Record<string, string> = { ncd21_quad_easy: 'easy', ncd21_quad_medium: 'medium', ncd21_quad_hard: 'hard', ncd21_stairs: 'stairs' };
+const TIERS = ['laptop-full', 'laptop-4e', 'laptop-1e'];
+const TL: Record<string, string> = { 'laptop-full': 'laptop, 12 threads', 'laptop-4e': '4 E-cores (N100-class proxy)', 'laptop-1e': '1 E-core' };
+const SENS10 = ['native', '128b-90-512c', '64b-90', '32b-90', '16b-90', '64b-45', '32b-45', '16b-30', 'mid360-budget'];
+const SENS5 = ['native@5hz', '64b-45@5hz', '32b-45@5hz', '16b-30@5hz', 'mid360-budget@5hz'];
+const find = (q: any) => rows.find((r) => Object.entries(q).every(([k, v]) => (k === 'sensor' ? r.sensor.id : r[k]) === v));
+const cls = (c?: string) => (c === 'FEASIBLE' || c === 'ADEQUATE' ? 'pass' : c === 'MARGINAL' ? 'warn' : c === 'INFEASIBLE' || c === 'INADEQUATE' ? 'fail' : 'info');
+const rec10 = S?.recommendation?.at_10hz;
+const rec5 = S?.recommendation?.at_5hz;
+const proj = (S?.projection ?? []).find((p: any) => p.sensor === rec10?.sensor?.sensor) ?? (S?.projection ?? [])[0];
+const labelOf = (id: string) => rows.find((r) => r.sensor.id === id)?.sensor.label ?? id;
+const H = S?.headline ?? {};
+---
+<Layout title="Sizing" description="Which LiDAR and which onboard computer: measured on real recordings, emulated sensors and several compute tiers.">
+  <section class="wrap section">
+    <p class="caption">B · Sensor and compute sizing</p>
+    <h1 style="max-width:22ch">Which LiDAR, and which computer to fly it with?</h1>
+    <p style="font-size:18px;margin-top:16px;max-width:72ch">One real 128-beam recording is reshaped into cheaper sensors (fewer beams, narrower field of view, fewer points, lower rate), run through compiled odometry at four motion levels, and timed on several compute tiers. Declared rules (decision log DEC-027, DEC-028, DEC-031) turn the measurements into a choice; this page does not pick by eye.</p>
+    {!S || !rows.length ? <p class="notice">The sizing campaign has not been exported yet. Run <code>python tools/run_matrix.py</code> then <code>python tools/sizing_analysis.py</code>.</p> : (
+    <div class="grid cols-3" style="margin-top:24px">
+      <div class="card stat"><div class="caption">Recommended sensor class (10 Hz)</div>
+        <div class="value" style="font-size:26px">{rec10?.sensor ? rec10.sensor.label : 'none passed'}</div>
+        {rec10?.sensor && <p class="muted"><Num file="sizing.json" path="recommendation.at_10hz.sensor.points_per_s" digits={0} /> points per second; ADEQUATE on all four motion windows. <span class="evidence">EMULATED</span></p>}</div>
+      <div class="card stat"><div class="caption">Weakest measured computer that keeps up</div>
+        <div class="value" style="font-size:26px">{rec10?.weakest_feasible_measured_tier ? TL[rec10.weakest_feasible_measured_tier.profile] : 'none measured'}</div>
+        {rec10?.weakest_feasible_measured_tier && <p class="muted">P99 uses <Num file="sizing.json" path="recommendation.at_10hz.weakest_feasible_measured_tier.share_pct" digits={0} /> % of the 100 ms frame on the hardest motion; rule: at most 50 %. <span class="evidence">MEASURED</span></p>}</div>
+      <div class="card stat"><div class="caption">Python vs compiled, same algorithm</div>
+        <div class="value">{H.python_over_compiled_same_algorithm ? <><Num file="sizing.json" path="headline.python_over_compiled_same_algorithm" digits={1} />×</> : 'UNAVAILABLE'}</div>
+        <p class="muted">Median frame time of the Python baseline over the compiled point-to-point ICP on the same scans (bag 9, same laptop). Language, not the algorithm, decided v1's verdict. <span class="evidence">MEASURED</span></p></div>
+    </div>)}
+  </section>
+
+  {rows.length > 0 && (<>
+  <section class="wrap section">
+    <h2>1 · From Python to compiled code</h2>
+    <p class="muted">Newer College 2020, bag 9 (Ouster OS1-64, 271 scans, walking). Same laptop, Ubuntu, performance governor. Bars: median and P99 frame time; dashed line: the 100 ms frame period.</p>
+    <div class="card"><div id="c-ladder" style="height:340px"></div></div>
+  </section>
+
+  <section class="wrap section">
+    <h2>2 · Sensor × motion × compute (10 Hz)</h2>
+    <p class="muted">Accuracy columns: compiled GICP on a full laptop, one 30 s window each; cell shows RPE over 10 m (% of distance) and the class. Compute columns: P99 frame time as a share of the 100 ms period on the hardest motion (quad-hard). FEASIBLE = P99 ≤ 50 % and no frame late; MARGINAL = P99 ≤ 100 %.</p>
+    <div class="card table-scroll"><table>
+      <thead><tr><th>Emulated sensor (from OS0-128)</th><th>points / s</th>{W.map((w) => <th>{WL[w]}<br /><span class="muted">RPE 10 m</span></th>)}{TIERS.map((t) => <th>{TL[t]}<br /><span class="muted">P99 / period</span></th>)}</tr></thead>
+      <tbody>{SENS10.map((sid) => {
+        const any = find({ sensor: sid, dataset: 'ncd21_quad_hard', variant: 'c-gicp', profile: 'laptop-full', phase: 'C' });
+        if (!any) return null;
+        return <tr>
+          <td><strong>{any.sensor.label}</strong><br /><span class="muted mono">{sid}</span></td>
+          <td>{fmt(any.points_per_s / 1000, 0)} k</td>
+          {W.map((w) => { const r = find({ sensor: sid, dataset: w, variant: 'c-gicp', profile: 'laptop-full', phase: 'C' });
+            return <td>{r ? <><span>{fmt(r.rpe10_pct, 2)} %</span><br /><span class={'status ' + cls(r.accuracy_class)}>{r.accuracy_class}</span></> : '—'}</td>; })}
+          {TIERS.map((t) => { const r = find({ sensor: sid, dataset: 'ncd21_quad_hard', variant: 'c-gicp', profile: t, voxel_m: 0.15 });
+            return <td>{r ? <><span>{fmt(r.p99_share_of_period_pct, 0)} % ({fmt(r.latency_ms.p99, 0)} ms)</span><br /><span class={'status ' + cls(r.realtime_class)}>{r.realtime_class}</span></> : '—'}</td>; })}
+        </tr>; })}</tbody>
+    </table></div>
+    <p class="muted" style="margin-top:8px">Emulation keeps the real scene, motion and timing but not the target sensor's optics, noise, exact beam angles, range or (Livox) scan pattern. Point budget row: Livox Mid-360-like field of view and points per scan only.</p>
+  </section>
+
+  <section class="wrap section">
+    <h2>3 · What a scan costs</h2>
+    <p class="muted">Each dot is one run (compiled GICP, 10 Hz sensors, all four windows). x: points left after the 0.15 m voxel filter; y: P99 frame time. Lines: least-squares cost model on every measured frame. Fewer beams cost less only until the voxel filter has nothing left to remove.</p>
+    <div class="card"><div id="c-cost" style="height:380px"></div></div>
+    <div class="card table-scroll" style="margin-top:16px"><table>
+      <thead><tr><th>Variant</th><th>Tier</th><th>fixed cost a (ms)</th><th>per 1000 points b (ms)</th><th>R²</th><th>frames</th></tr></thead>
+      <tbody>{(S.cost_model ?? []).map((c: any) => <tr><td>{c.variant}</td><td>{c.profile}</td><td>{fmt(c.a_ms, 1)}</td><td>{fmt(c.b_ms_per_kpt, 2)}</td><td>{fmt(c.r2, 2)}</td><td>{c.frames}</td></tr>)}</tbody>
+    </table></div>
+  </section>
+
+  <section class="wrap section">
+    <h2>4 · Boards that were not measured <span class="evidence">ASSUMED</span></h2>
+    <p class="muted">Projection for {proj ? labelOf(proj.sensor) : 'the recommended sensor'} on quad-hard: the measured single performance-core P99 scaled by published Geekbench 6 single-core scores (one thread, the pessimistic case for a compiled pipeline that also uses more cores). Error bars: the spread of published scores. Section 5 shows how well that scaling predicts this workload on pairs that were measured.</p>
+    <div class="card"><div id="c-boards" style="height:380px"></div></div>
+    {proj && <div class="card table-scroll" style="margin-top:16px"><table>
+      <thead><tr><th>Board</th><th>GB6 single-core</th><th>projected P99, 1 thread</th><th>share of 100 ms</th><th>class (projection)</th><th>source</th></tr></thead>
+      <tbody>{proj.boards.map((b: any) => <tr><td>{b.board}</td><td>{b.gb6_single}</td><td>{fmt(b.p99_single_thread_ms, 0)} ms</td><td>{fmt(b.share_of_period_pct, 0)} %</td><td><span class={'status ' + cls(b.class_single_thread)}>{b.class_single_thread}</span></td><td>{b.sources.map((u: string, i: number) => <a href={u} rel="noopener">[{i + 1}]</a>)}</td></tr>)}</tbody>
+    </table></div>}
+  </section>
+
+  <section class="wrap section">
+    <h2>5 · Does a single-core benchmark predict this workload?</h2>
+    <div class="card table-scroll"><table>
+      <thead><tr><th>Comparison (same scans, same code)</th><th>measured</th><th>predicted from GB6</th></tr></thead>
+      <tbody>{(S.scaling ?? []).map((c: any) => <tr><td>{c.what}{c.arm_cpu && <><br /><span class="muted mono">{c.arm_cpu}{c.x86_cpu ? ' vs ' + c.x86_cpu : ''}</span></>}</td>
+        <td>{c.measured_ratio_p50 ? fmt(c.measured_ratio_p50, 2) + '× slower' : c.measured_speedup_p50 ? fmt(c.measured_speedup_p50, 2) + '× faster' : '—'}</td>
+        <td>{c.predicted_ratio ? fmt(c.predicted_ratio, 2) + '×' : '—'}</td></tr>)}</tbody>
+    </table></div>
+  </section>
+
+  <section class="wrap section">
+    <h2>6 · Accuracy against points per second</h2>
+    <p class="muted">RPE over 10 m for every emulated sensor at 10 Hz and 5 Hz, by motion level. The dashed line is the 2 % accuracy rule.</p>
+    <div class="card"><div id="c-acc" style="height:380px"></div></div>
+    <h3 style="margin-top:24px">Halving the frame rate (5 Hz)</h3>
+    <div class="card table-scroll"><table>
+      <thead><tr><th>Sensor</th>{W.map((w) => <th>{WL[w]}</th>)}<th>P99 / 200 ms (hard, laptop)</th></tr></thead>
+      <tbody>{SENS5.map((sid) => { const h = find({ sensor: sid, dataset: 'ncd21_quad_hard', variant: 'c-gicp', profile: 'laptop-full', phase: 'C' }); if (!h) return null;
+        return <tr><td>{h.sensor.label}</td>{W.map((w) => { const r = find({ sensor: sid, dataset: w, variant: 'c-gicp', profile: 'laptop-full', phase: 'C' });
+          return <td>{r ? <><span>{fmt(r.rpe10_pct, 2)} %</span> <span class={'status ' + cls(r.accuracy_class)}>{r.accuracy_class}</span></> : '—'}</td>; })}
+          <td>{fmt(h.p99_share_of_period_pct, 0)} %</td></tr>; })}</tbody>
+    </table></div>
+    {rec5 && <p class="muted" style="margin-top:8px">At 5 Hz the rule picks: <strong>{rec5.sensor ? rec5.sensor.label : 'no sensor passes on all four windows'}</strong>.</p>}
+  </section>
+
+  <section class="wrap section">
+    <h2>7 · LiDAR data rate (link sizing)</h2>
+    <p class="muted">Bytes per second actually recorded in the bag windows. The point-cloud message is what the odometry consumes; the raw packet stream is what crosses the Ethernet link from the sensor.</p>
+    <div class="card table-scroll"><table>
+      <thead><tr><th>Window</th><th>scans</th><th>PointCloud2 (Mbit/s)</th><th>raw LiDAR packets (Mbit/s)</th></tr></thead>
+      <tbody>{(S.data_rate ?? []).map((d: any) => <tr><td class="mono">{d.window}</td><td>{d.scans}</td><td>{fmt(d.pointcloud2_mbit_s, 0)}</td><td>{fmt(d.raw_lidar_packets_mbit_s, 0)}</td></tr>)}</tbody>
+    </table></div>
+  </section>
+  </>)}
+
+  <section class="wrap section">
+    <h2>Limits of this answer</h2>
+    <ul style="padding-left:18px;max-width:80ch">
+      <li>Handheld recordings, not flight: no rotor vibration, and the hardest window (145 °/s at the 95th percentile) is a stand-in for aggressive yaw.</li>
+      <li>Scan-to-scan odometry without IMU or map. A flying stack (for example LiDAR-inertial odometry) is more robust and does more work per scan; the cost model is the starting point for sizing it, not its result.</li>
+      <li>Boards other than this laptop and the cloud VMs are projections (<span class="evidence">ASSUMED</span>). Buy one candidate board and run <code>autonav run --profile pi5</code> (or any profile) on it before committing to a fleet.</li>
+      <li>Rules and thresholds are declared in the <a href="https://github.com/JeyaVardhan-L/lidar-compute-sizing/blob/master/docs/decision-log.md">decision log</a>; the tables show raw numbers so other thresholds can be applied.</li>
+    </ul>
+  </section>
+
+  <div id="sizing-charts" data-base={base}></div>
+  <script>import '../../scripts/sizing.ts';</script>
+</Layout>

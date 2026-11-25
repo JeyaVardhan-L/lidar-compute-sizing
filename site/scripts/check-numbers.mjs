@@ -13,6 +13,13 @@ for (const f of walk(dist).filter((x) => x.endsWith('.html'))) {
   for (const m of html.matchAll(re)) {
     const [, run, file, p, digits, shown] = m;
     checked++;
+    if (run === 'campaign') {  // campaign-level number: site copy must equal artifacts/sizing/<file>
+      let v = JSON.parse(fs.readFileSync(path.join(root, 'artifacts', 'sizing', file), 'utf-8'));
+      for (const k of p.split('.')) v = v == null ? null : v[k];
+      const expected = typeof v === 'number' ? v.toFixed(Number(digits)) : v == null ? 'UNAVAILABLE' : String(v);
+      if (expected !== shown.trim()) { console.error(`MISMATCH sizing ${file}:${p}  page="${shown}" artifact="${expected}"`); bad++; }
+      continue;
+    }
     if (!published.includes(run)) { console.error(`NOT PUBLISHED: ${run} (${path.basename(f)})`); bad++; continue; }
     let v = JSON.parse(fs.readFileSync(path.join(root, 'artifacts', 'runs', run, file), 'utf-8'));
     for (const k of p.split('.')) v = v == null ? null : v[k];

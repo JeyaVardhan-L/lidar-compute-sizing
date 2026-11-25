@@ -12,11 +12,11 @@ c-gicp   Generalized-ICP (plane-to-plane via local covariances), scan-to-scan, c
 
 Timing boundaries (same meaning as the Python variants):
   preprocess  range filter (NumPy) + voxel grid (C++) [+ covariance estimation and KD-tree for the new scan]
-  register    alignment + validity gate + pose update. For c-gicp the gate's mean residual is measured by a
-              nearest-neighbour pass after alignment (its own cost is inside register_ms). For c-icp the
-              residual is the RMS of inlier residuals from the solver's final error (error = 0.5 * sum r^2,
-              verified against a direct nearest-neighbour check); RMS >= mean, so the gate is at least as
-              strict as for baseline.
+  register    alignment + validity gate + pose update. The gate's residual is the mean nearest-neighbour
+              distance of the inliers after alignment, as for the Python variants (its cost is inside
+              register_ms). c-icp runs one solver iteration per call so that it can use the baseline's stopping
+              rule (translation update or residual change below the tolerance); small_gicp's own rule ran to the
+              iteration cap on real scans (DEC-032).
 Threads: one per CPU the process may use (the hardware profile sets the CPU affinity).
 """
 
@@ -66,29 +66,45 @@ class _CompiledBase(ICPOdometry):
         pts = cloud.points()[:, :3]
         return pts, n_valid, n_range
 
+    def _align(self, init, max_iterations):
+        return self.sg.align(self._prev_cloud, self._cur_cloud, self._prev_tree, init_T_target_source=init,
+                             registration_type=self.registration_type,
+                             max_correspondence_distance=self.max_correspondence_distance,
+                             num_threads=self.threads, max_iterations=max_iterations)
+
     def _register(self, pts) -> ICPResult:
-        sg = self.sg
         init = self._last_rel if self.constant_velocity else np.eye(4)
-        res = sg.align(self._prev_cloud, self._cur_cloud, self._prev_tree, init_T_target_source=init,
-                       registration_type=self.registration_type,
-                       max_correspondence_distance=self.max_correspondence_distance,
-                       num_threads=self.threads, max_iterations=self.max_iterations)
-        T = np.array(res.T_target_source, dtype=np.float64)
-        n = max(self._cur_cloud.size(), 1)
         if self.registration_type == "ICP":
-            fitness = float(np.sqrt(2.0 * res.error / res.num_inliers)) if res.num_inliers else float("inf")
-            inliers = int(res.num_inliers)
+            # The baseline's stopping rule, with compiled inner steps: one solver iteration per call, stop when
+            # the translation update or the change in inlier residual is below the tolerance (odometry.py).
+            T, prev, iters, converged = np.array(init, dtype=np.float64), float("inf"), 0, False
+            for _ in range(self.max_iterations):
+                res = self._align(T, 1)
+                iters += 1
+                T_new = np.array(res.T_target_source, dtype=np.float64)
+                step = float(np.linalg.norm((T_new @ np.linalg.inv(T))[:3, 3]))
+                rms = float(np.sqrt(2.0 * res.error / res.num_inliers)) if res.num_inliers else float("inf")
+                T = T_new
+                if step < self.tolerance or abs(prev - rms) < self.tolerance:
+                    converged = True
+                    break
+                prev = rms
         else:
-            moved = pts @ T[:3, :3].T + T[:3, 3]
-            _, d2 = self._prev_tree.batch_nearest_neighbor_search(moved, num_threads=self.threads)
-            d = np.sqrt(np.asarray(d2, dtype=np.float64))
-            m = d <= self.max_correspondence_distance
-            inliers = int(np.count_nonzero(m))
-            fitness = float(d[m].mean()) if inliers else float("inf")
+            res = self._align(init, self.max_iterations)
+            T, iters, converged = np.array(res.T_target_source, dtype=np.float64), int(res.iterations), bool(res.converged)
+        # Validity-gate residual exactly as for the Python variants: mean nearest-neighbour distance of the
+        # inliers (within the correspondence distance) after alignment. Its cost is inside register_ms.
+        moved = pts @ T[:3, :3].T + T[:3, 3]
+        _, d2 = self._prev_tree.batch_nearest_neighbor_search(moved, num_threads=self.threads)
+        d = np.sqrt(np.asarray(d2, dtype=np.float64))
+        m = d <= self.max_correspondence_distance
+        inliers = int(np.count_nonzero(m))
+        fitness = float(d[m].mean()) if inliers else float("inf")
+        n = max(len(pts), 1)
         out = ICPResult(success=bool(inliers >= 20), transformation=T, rotation=T[:3, :3].copy(),
                         translation=T[:3, 3].copy(), fitness_score=fitness, inlier_ratio=inliers / n,
-                        num_inliers=inliers, iterations=int(res.iterations),
-                        status="CONVERGED" if res.converged else "MAX_ITERATIONS")
+                        num_inliers=inliers, iterations=iters,
+                        status="CONVERGED" if converged else "MAX_ITERATIONS")
         self._pending = out
         return out
 

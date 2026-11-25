@@ -1,0 +1,115 @@
+{
+ "generated_from_runs": 0,
+ "rules": {
+  "realtime": {
+   "FEASIBLE": "P99 <= 50 % of the frame period and no frame above it",
+   "MARGINAL": "P99 <= frame period",
+   "INFEASIBLE": "P99 > frame period",
+   "decision": "DEC-027"
+  },
+  "accuracy": {
+   "ADEQUATE": "accepted >= 99.0 %, RPE(10 m) <= 2.0 %, ATE RMSE <= 0.3 m",
+   "decision": "DEC-028"
+  }
+ },
+ "rows": [],
+ "cost_model": [],
+ "scaling": [],
+ "projection": [],
+ "gb6_sources": {
+  "i5-13420H P-core (this laptop)": {
+   "score": 2200,
+   "range": [
+    2169,
+    2227
+   ],
+   "src": [
+    "https://browser.geekbench.com/v6/cpu/15989553",
+    "https://browser.geekbench.com/v6/cpu/baseline/10753211"
+   ]
+  },
+  "Intel N100 (4x Gracemont, 3.4 GHz)": {
+   "score": 1160,
+   "range": [
+    1100,
+    1230
+   ],
+   "cores": 4,
+   "src": [
+    "https://browser.geekbench.com/v6/cpu/17041237"
+   ]
+  },
+  "Azure Cobalt 100 (GitHub ARM runner)": {
+   "score": 1629,
+   "range": [
+    1629,
+    1629
+   ],
+   "src": [
+    "https://browser.geekbench.com/v6/cpu/baseline/9013329"
+   ]
+  },
+  "Jetson AGX Orin (12x A78AE)": {
+   "score": 966,
+   "range": [
+    966,
+    966
+   ],
+   "cores": 12,
+   "src": [
+    "https://browser.geekbench.com/v6/cpu/9113690"
+   ]
+  },
+  "Jetson Orin NX (8x A78AE)": {
+   "score": 875,
+   "range": [
+    869,
+    913
+   ],
+   "cores": 8,
+   "src": [
+    "https://browser.geekbench.com/v6/cpu/18785251",
+    "https://browser.geekbench.com/v6/cpu/10489182"
+   ]
+  },
+  "RK3588 (4x A76 + 4x A55)": {
+   "score": 852,
+   "range": [
+    852,
+    852
+   ],
+   "cores": 4,
+   "src": [
+    "https://browser.geekbench.com/v6/cpu/baseline/8363422"
+   ]
+  },
+  "Raspberry Pi 5 (4x A76, 2.4 GHz)": {
+   "score": 800,
+   "range": [
+    740,
+    833
+   ],
+   "cores": 4,
+   "src": [
+    "https://browser.geekbench.com/v6/cpu/baseline/8820089",
+    "https://browser.geekbench.com/v6/cpu/8840458"
+   ]
+  }
+ },
+ "data_rate": [],
+ "recommendation": {
+  "rule": "DEC-031",
+  "candidates": [],
+  "at_10hz": {
+   "sensor": null,
+   "tiers_on_quad_hard": [],
+   "weakest_feasible_measured_tier": null
+  },
+  "at_5hz": {
+   "sensor": null,
+   "tiers_on_quad_hard": [],
+   "weakest_feasible_measured_tier": null
+  }
+ },
+ "headline": {}
+}

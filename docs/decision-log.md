@@ -306,3 +306,21 @@ DEC-030 were written before any v2 result was seen.
 | Field | Value |
 |-------|-------|
 | **Decision** | v2 is measured on the same laptop as v1 but under Ubuntu, on AC power, with the cpufreq governor, energy-performance preference and AC state recorded in every `run.json` (`power_plan`). The Windows v1 runs stay published as history and are not mixed with v2 in any comparison. |
+
+## DEC-031 — How the recommendation is derived (declared before results)
+
+| Field | Value |
+|-------|-------|
+| **Sensor** | The emulated sensor model with the **fewest points per second** whose `c-gicp` runs are ADEQUATE (DEC-028) on **all four** 2021 windows (easy, medium, hard, stairs) at its rate. Ties go to the wider vertical FOV (a drone sees floors, ceilings and obstacles above and below). 10 Hz and 5 Hz are reported separately. |
+| **Compute** | For the recommended sensor on quad-hard, the weakest **measured** tier that is FEASIBLE (DEC-027), in the order 1 E-core → 4 E-cores (N100-class proxy) → full laptop. Boards that were not measured are listed with their ASSUMED single-thread projection and never called FEASIBLE on that basis alone. |
+| **Computed by** | `tools/sizing_analysis.py` (`headline.recommendation`), so the rule, not a reader, picks the answer. |
+
+## DEC-032 — c-icp fixed after the first cloud run (found in review of results, not tuned to them)
+
+| Field | Value |
+|-------|-------|
+| **Date** | 2026-11-25 |
+| **Found** | First cloud run on Oxford Spires: `c-icp` ATE 11.1 m against 1.3 m for the Python baseline it is meant to equal; 82 % of registrations rejected for `high_residual`, 29 iterations per frame. |
+| **Cause** | (1) small_gicp's own stopping rule (rotation 0.1°, translation 1 mm) is not the baseline's (translation update **or** residual change below 1e-4 m), so it ran to the cap. (2) The gate used the RMS inlier residual from the solver; on real, heavy-tailed residuals RMS is far above the mean the gate threshold was set for (0.67 m vs 0.16 m), so good registrations were rejected and the pose froze. The synthetic unit test could not show either. |
+| **Fix** | `c-icp` runs one compiled solver iteration per call and applies the baseline's stopping rule; both compiled variants compute the gate residual exactly as the Python variants do (mean nearest-neighbour distance of inliers, cost included in `register_ms`). On the first 40 bag-9 frames: 39/39 accepted, median 10 vs 11 iterations, positions within 5 cm of `baseline`. |
+| **Consequence** | The first cloud runs (commit d4a6d4b) are superseded and not published; the cloud benchmark was re-run on the fixed commit. Gate thresholds were not changed. |
