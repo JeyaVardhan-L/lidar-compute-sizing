@@ -37,7 +37,7 @@ jobs:
         run: npm run build
         working-directory: site
         env:
-          SITE_BASE: /Baseline_tests_for_AutoNav/
+          SITE_BASE: /${{ github.event.repository.name }}/   # follows a repository rename
       - uses: actions/upload-pages-artifact@v3
         with:
           path: site/dist

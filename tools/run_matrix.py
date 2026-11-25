@@ -68,6 +68,22 @@ def matrix():
     return m
 
 
+def dataset_ready(ds_id):
+    """Frames present and complete: ground truth on disk (when configured) and, for windows fetched from a bag,
+    the fetch manifest that tools/fetch_bag_window.py writes only after the last scan."""
+    ds = resolve_dataset(ds_id)
+    frames = Path(ds["frames"])
+    if not frames.is_dir():
+        return False
+    if ds.get("gt") and not Path(ds["gt"]).is_file():
+        return False
+    if any(frames.glob("cloud_*.pcd")) and ds_id != "newer_college_bag9" and not (frames / "fetch_manifest.json").is_file():
+        return False
+    if ds_id == "newer_college_bag9" and not (frames / "fetch_manifest.json").is_file():
+        return False
+    return True
+
+
 def completed_labels():
     done = set()
     for rj in (REPO / "artifacts" / "runs").glob("*/run.json"):
@@ -94,7 +110,7 @@ def main() -> int:
     for k, e in enumerate(todo, 1):
         if e["label"] in done:
             continue
-        if not Path(resolve_dataset(e["dataset"])["frames"]).is_dir():
+        if not dataset_ready(e["dataset"]):
             skipped_missing.append(e["label"])
             continue
         cmd = exe + ["run", "--dataset", e["dataset"], "--variant", e["variant"], "--profile", e["profile"],

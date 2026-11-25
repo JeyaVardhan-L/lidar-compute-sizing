@@ -111,8 +111,11 @@ def _check_headers(files):
             bad.append(f.name); continue
         n = int(re.search(rb"POINTS (\d+)", head).group(1))
         sizes.add(n)
-        # packed 29-byte Ouster record
-        if f.stat().st_size - end < n * 29:
+        # record size from the header's SIZE x COUNT (29 bytes for the 2020 OS1 export, 27 for 2021 OS0)
+        sz = [int(x) for x in re.search(rb"SIZE ([\d ]+)", head).group(1).split()]
+        cm = re.search(rb"COUNT ([\d ]+)", head)
+        cnt = [int(x) for x in cm.group(1).split()] if cm else [1] * len(sz)
+        if f.stat().st_size - end < n * sum(a * b for a, b in zip(sz, cnt)):
             bad.append(f.name)
     return {"distinct_POINTS": sorted(int(s) for s in sizes), "bad_files": bad}
 

@@ -61,6 +61,9 @@ def main() -> int:
     warmup = int(spec["warmup"])
     single_frame = spec["mode"] == "single-frame"
     odo = None if single_frame else make_odometry(spec["variant"], spec["params"])
+    if odo is not None and spec.get("gate"):
+        from autonav_baseline.lidar.odometry import RegistrationGate
+        odo.gate = RegistrationGate(**spec["gate"])  # per-dataset plausibility bound (DEC-033), recorded in run.json
     period_ms = 1000.0 / spec["nominal_hz"]
     params = spec["params"]
     sensor = spec.get("sensor") or {"id": "native", "model": {}}

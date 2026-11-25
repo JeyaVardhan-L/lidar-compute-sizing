@@ -1,0 +1,61 @@
+{
+  "tool": "tools/fetch_bag_window.py",
+  "bag_size_bytes": 1743191058,
+  "bytes_transferred": 1740520986,
+  "topic": "/os1_cloud_node/points",
+  "window_s": [
+    0.0,
+    30.0
+  ],
+  "window_span_s": 27.068,
+  "bag_time_span": [
+    1583838094.276937,
+    1583838121.3445315
+  ],
+  "chunks_fetched": 108,
+  "chunks_total": 112,
+  "scans_written": 271,
+  "seconds": 522.0,
+  "topic_payload_in_window": {
+    "/camera/accel/sample": {
+      "bytes": 2279810,
+      "messages": 6745,
+      "mbit_per_s": 0.67
+    },
+    "/camera/gyro/sample": {
+      "bytes": 3640274,
+      "messages": 10802,
+      "mbit_per_s": 1.08
+    },
+    "/camera/infra1/image_rect_raw": {
+      "bytes": 330165399,
+      "messages": 811,
+      "mbit_per_s": 97.58
+    },
+    "/camera/infra2/image_rect_raw": {
+      "bytes": 330165399,
+      "messages": 811,
+      "mbit_per_s": 97.58
+    },
+    "/os1_cloud_node/imu": {
+      "bytes": 864960,
+      "messages": 2703,
+      "mbit_per_s": 0.26
+    },
+    "/os1_cloud_node/points": {
+      "bytes": 852548656,
+      "messages": 271,
+      "mbit_per_s": 251.98
+    },
+    "/os1_node/imu_packets": {
+      "bytes": 143259,
+      "messages": 2703,
+      "mbit_per_s": 0.04
+    },
+    "/os1_node/lidar_packets": {
+      "bytes": 218154448,
+      "messages": 17296,
+      "mbit_per_s": 64.48
+    }
+  }
+}

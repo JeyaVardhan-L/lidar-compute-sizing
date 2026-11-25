@@ -35,8 +35,11 @@ def git_info() -> Dict[str, Any]:
     def run(*args):
         return subprocess.check_output(["git", *args], cwd=REPO_ROOT, text=True, stderr=subprocess.DEVNULL).strip()
     try:
+        changed = [l[3:] for l in run("status", "--porcelain").splitlines() if l.strip()]
+        # code that can change a measurement; docs and site edits during a campaign cannot
+        code = [f for f in changed if f.startswith(("src/", "tools/run_matrix.py", "pyproject.toml"))]
         return {"commit": run("rev-parse", "HEAD"), "branch": run("rev-parse", "--abbrev-ref", "HEAD"),
-                "dirty": bool(run("status", "--porcelain"))}
+                "dirty": bool(changed), "dirty_code": bool(code), "changed_files": changed[:50]}
     except Exception:
         return {"commit": "UNKNOWN", "branch": "UNKNOWN", "dirty": None}
 

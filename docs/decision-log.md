@@ -324,3 +324,13 @@ DEC-030 were written before any v2 result was seen.
 | **Cause** | (1) small_gicp's own stopping rule (rotation 0.1°, translation 1 mm) is not the baseline's (translation update **or** residual change below 1e-4 m), so it ran to the cap. (2) The gate used the RMS inlier residual from the solver; on real, heavy-tailed residuals RMS is far above the mean the gate threshold was set for (0.67 m vs 0.16 m), so good registrations were rejected and the pose froze. The synthetic unit test could not show either. |
 | **Fix** | `c-icp` runs one compiled solver iteration per call and applies the baseline's stopping rule; both compiled variants compute the gate residual exactly as the Python variants do (mean nearest-neighbour distance of inliers, cost included in `register_ms`). On the first 40 bag-9 frames: 39/39 accepted, median 10 vs 11 iterations, positions within 5 cm of `baseline`. |
 | **Consequence** | The first cloud runs (commit d4a6d4b) are superseded and not published; the cloud benchmark was re-run on the fixed commit. Gate thresholds were not changed. |
+
+## DEC-033 — Motion-plausibility bound for the 2021 windows (declared before any 2021 odometry run)
+
+| Field | Value |
+|-------|-------|
+| **Date** | 2026-11-25 |
+| **Found by** | `tools/validate_window.py` on the quad-hard window against **ground truth** (no odometry had run on 2021 data): 1,667° of total rotation in 30 s and up to **34.2° between consecutive scans**. |
+| **Problem** | DEC-006 set `max_step_rotation_deg = 20` from walking physics. On these windows it would reject correct registrations of real motion, measuring the gate rather than the sensor. |
+| **Decision** | For the Newer College 2021 datasets only, `max_step_rotation_deg = 45` (ground-truth maximum plus margin; still rejects a wild solution). Translation, inlier and residual thresholds are unchanged. Walking datasets (2020 bag 9, Spires) keep DEC-006. The gate in effect is recorded in each `run.json` (`registration_gate`). |
+| **Also fixed** | `validate_window.py` assumed the 29-byte 2020 record; it now reads SIZE × COUNT from each header (2021 records are 27 bytes). |

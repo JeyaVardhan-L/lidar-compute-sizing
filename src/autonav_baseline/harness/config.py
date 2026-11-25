@@ -80,6 +80,9 @@ _NCD21 = {
     "same_sensor_as_target": False,
     "organized": [128, 1024],
     "layout": "row-major",
+    # DEC-033: plausibility bound from the ground-truth dynamics of these windows (max 34 deg between scans in
+    # quad-hard), declared before any 2021 odometry run. Walking datasets keep the DEC-006 values.
+    "gate": {"max_step_rotation_deg": 45.0},
     "beam_altitudes": "configs/sensors/os0-128_beam_altitudes.json",
 }
 for _key, _title, _gt, _offset in [

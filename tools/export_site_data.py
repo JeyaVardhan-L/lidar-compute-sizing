@@ -43,7 +43,7 @@ METRICS = [
      "definition": "Frames processed per second of wall-clock time over the whole loop, file loading included.",
      "calculation": "frames / loop wall time per repeat (min, median, max over repeats).", "interpretation": "Must exceed the sensor rate (10 fps) to keep up in steady state."},
     {"id": "peak_rss_mb", "name": "Peak memory", "unit": "MB", "evidence": "MEASURED",
-     "definition": "Peak resident (working-set) memory of the worker process.", "calculation": "psutil peak_wset (Windows) or ru_maxrss.",
+     "definition": "Peak resident (working-set) memory of the worker process.", "calculation": "psutil peak_wset on Windows; ru_maxrss on Linux.",
      "interpretation": "Process peak; machine RAM is a separate specification, not a measurement."},
     {"id": "accepted_percent", "name": "Accepted registrations", "unit": "%", "evidence": "DERIVED",
      "definition": "Registrations that pass the validity gate (inlier ratio, residual, plausible motion) divided by attempts.",
@@ -60,7 +60,7 @@ METRICS = [
     {"id": "inlier_ratio", "name": "Inlier ratio", "unit": "fraction", "evidence": "MEASURED",
      "definition": "Source points with a target neighbour within 1.5 m, divided by source points.", "calculation": "Last ICP iteration.", "interpretation": "Low values mean little scan overlap or a wrong match."},
     {"id": "residual_m", "name": "Registration residual", "unit": "m", "evidence": "MEASURED",
-     "definition": "Mean distance of inlier correspondences at the start of the last iteration.", "calculation": "Point-to-point distance for all variants.", "interpretation": "Included in the validity gate."},
+     "definition": "Mean distance of inlier correspondences (within 1.5 m): at the start of the last iteration for the Python variants, after alignment for the compiled ones.", "calculation": "Point-to-point nearest-neighbour distance for all variants (DEC-032).", "interpretation": "Included in the validity gate."},
 ]
 
 
@@ -102,7 +102,10 @@ def main() -> int:
                 "profile": run["profile"]["id"], "mode": run["mode"], "label": run.get("label", ""),
                 "window": run["window"], "commit": run["git"]["commit"][:7], "git_dirty": run["git"]["dirty"],
                 "started_utc": run["started_utc"], "cpu_model": run["environment"]["cpu_model"],
-                "hardware_label": run["hardware_label"]}
+                "hardware_label": run["hardware_label"],
+                "sensor_model": (run.get("sensor_model") or {}).get("id", "native"),
+                "sensor_label": (run.get("sensor_model") or {}).get("label", "as recorded"),
+                "voxel_m": run["parameters"]["voxel_size"], "power": run["environment"].get("conditions_before_run", {}).get("power_plan")}
         if s.get("status") == "completed":
             t = s["latency_ms"]["total_ms"]
             item.update(p50_ms=t["p50"], p90_ms=t["p90"], p95_ms=t["p95"], p99_ms=t["p99"], max_ms=t["max"],
@@ -126,6 +129,11 @@ def main() -> int:
     (a.out / "datasets.json").write_text(json.dumps(datasets, indent=2), encoding="utf-8")
     (a.out / "profiles.json").write_text(json.dumps({k: v["claim"] for k, v in PROFILES.items()}, indent=2), encoding="utf-8")
     (a.out / "comparisons.json").write_text(json.dumps(comparisons, indent=2), encoding="utf-8")
+    # campaign summary (tools/sizing_analysis.py) and the frozen v1 history are copied, never recomputed here
+    for src, name in ((REPO / "artifacts" / "sizing" / "sizing.json", "sizing.json"),
+                      (REPO / "artifacts" / "history" / "v1_windows_runs.json", "history_v1.json")):
+        if src.is_file():
+            shutil.copy2(src, a.out / name)
     for f in a.out.rglob("*"):
         if f.is_file() and f.suffix in (".json", ".csv"):
             scan(f.read_text(encoding="utf-8"), f.relative_to(a.out).as_posix())
